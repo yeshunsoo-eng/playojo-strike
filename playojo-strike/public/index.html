@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PlayOJO Strike</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0a0a0f;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hidden}
+
+  /* ── Screens ── */
+  #lobby,#deathScreen,#matchOver,#hud{position:fixed;inset:0}
+  #lobby{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#0a0a0f 0%,#1a0a00 100%);z-index:100}
+  .logo{font-size:3rem;font-weight:900;letter-spacing:4px;margin-bottom:.2rem}
+  .logo span{color:#ff6600}
+  .subtitle{font-size:1.1rem;color:#ff6600;letter-spacing:6px;margin-bottom:2.5rem;text-transform:uppercase}
+  #lobby input{padding:12px 20px;font-size:1rem;border-radius:8px;border:2px solid #ff6600;
+    background:#111;color:#fff;text-align:center;width:260px;margin-bottom:1rem;outline:none}
+  #lobby button{padding:14px 40px;font-size:1.1rem;font-weight:700;border:none;border-radius:8px;
+    background:linear-gradient(90deg,#ff6600,#ff9900);color:#fff;cursor:pointer;letter-spacing:2px;
+    text-transform:uppercase;transition:.2s}
+  #lobby button:hover{transform:scale(1.05);box-shadow:0 0 20px #ff660088}
+  .controls-hint{margin-top:2rem;font-size:.8rem;color:#666;line-height:1.8;text-align:center}
+  .controls-hint b{color:#ff6600}
+
+  /* ── HUD ── */
+  #hud{pointer-events:none;display:none;z-index:10}
+  #crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:20px;height:20px;opacity:.85}
+  #crosshair::before,#crosshair::after{content:'';position:absolute;background:#ff6600;border-radius:2px}
+  #crosshair::before{width:2px;height:100%;left:50%;transform:translateX(-50%)}
+  #crosshair::after{width:100%;height:2px;top:50%;transform:translateY(-50%)}
+
+  #healthBar{position:absolute;bottom:40px;left:40px;display:flex;align-items:center;gap:12px}
+  #healthIcon{font-size:1.4rem}
+  #healthTrack{width:180px;height:14px;background:#333;border-radius:7px;overflow:hidden;border:1px solid #555}
+  #healthFill{height:100%;background:linear-gradient(90deg,#ff3300,#ff6600);transition:.2s;border-radius:7px}
+  #healthNum{font-size:.9rem;font-weight:700;color:#ff6600;min-width:36px}
+
+  #ammoBox{position:absolute;bottom:40px;right:40px;text-align:right}
+  #ammoMain{font-size:2.5rem;font-weight:900;color:#ff6600;line-height:1}
+  #ammoReserve{font-size:1rem;color:#888}
+  #weaponName{font-size:.75rem;letter-spacing:3px;color:#ff9900;text-transform:uppercase;margin-top:4px}
+
+  #teamBadge{position:absolute;top:20px;left:50%;transform:translateX(-50%);
+    padding:6px 24px;border-radius:20px;font-weight:700;letter-spacing:3px;font-size:.85rem}
+  .team-OJO{background:#ff660033;border:1px solid #ff6600;color:#ff9900}
+  .team-STRIKE{background:#0066ff33;border:1px solid #0066ff;color:#66aaff}
+
+  #timerBox{position:absolute;top:20px;left:50%;transform:translateX(-50%) translateY(40px);
+    font-size:1.6rem;font-weight:900;color:#fff;text-shadow:0 0 10px #ff6600}
+
+  #scorePanel{position:absolute;top:20px;left:20px;background:#00000088;border-radius:8px;
+    padding:10px 16px;border:1px solid #333;min-width:100px}
+  .score-row{display:flex;justify-content:space-between;gap:12px;font-size:.85rem;margin-bottom:4px}
+  .score-row:last-child{margin-bottom:0}
+  .s-ojo{color:#ff9900;font-weight:700}.s-str{color:#66aaff;font-weight:700}
+  .s-num{font-size:1.1rem;font-weight:900}
+
+  #killfeed{position:absolute;top:80px;right:20px;display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+  .kf-entry{background:#000000aa;padding:5px 10px;border-radius:4px;font-size:.78rem;
+    border-left:3px solid #ff6600;animation:fadeKF 4s forwards}
+  @keyframes fadeKF{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
+  .kf-killer{color:#ff9900;font-weight:700}.kf-victim{color:#ccc}
+  .kf-gun{color:#666;font-size:.7rem;margin:0 4px}
+
+  #weaponBar{position:absolute;bottom:90px;right:40px;display:flex;gap:8px}
+  .wbtn{padding:5px 12px;border-radius:4px;border:1px solid #444;background:#111;
+    color:#888;font-size:.75rem;cursor:pointer;letter-spacing:1px;pointer-events:all}
+  .wbtn.active{border-color:#ff6600;color:#ff9900;background:#ff660022}
+
+  #hitMarker{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    color:#ff3300;font-size:1.5rem;opacity:0;transition:opacity .1s;font-weight:900}
+
+  #deathScreen{display:none;align-items:center;justify-content:center;flex-direction:column;
+    background:#00000099;z-index:50}
+  #deathScreen h2{font-size:3rem;color:#ff3300;font-weight:900;text-shadow:0 0 30px #ff330088}
+  #deathScreen p{color:#aaa;margin-top:.5rem}
+  #respawnTimer{font-size:1.5rem;color:#ff6600;margin-top:1rem;font-weight:700}
+
+  #matchOver{display:none;align-items:center;justify-content:center;flex-direction:column;
+    background:#000000cc;z-index:60}
+  #matchOver h2{font-size:2.5rem;font-weight:900;margin-bottom:1rem}
+  #matchOver button{margin-top:1.5rem;padding:12px 36px;background:#ff6600;border:none;
+    border-radius:8px;color:#fff;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:2px}
+
+  #scoreboard{position:absolute;inset:0;background:#000000cc;display:none;z-index:30;
+    align-items:center;justify-content:center;flex-direction:column}
+  #scoreboard.show{display:flex}
+  #sbTable{width:560px;border-collapse:collapse}
+  #sbTable th{background:#ff660033;color:#ff9900;padding:8px 12px;font-size:.8rem;letter-spacing:2px}
+  #sbTable td{padding:8px 12px;border-bottom:1px solid #222;font-size:.85rem;text-align:center}
+  .sb-ojo td:first-child{color:#ff9900}.sb-str td:first-child{color:#66aaff}
+  #sbTitle{font-size:1.5rem;font-weight:900;color:#ff6600;letter-spacing:4px;margin-bottom:1rem}
+
+  #pointer-prompt{position:fixed;inset:0;background:#000000bb;display:flex;align-items:center;
+    justify-content:center;z-index:20;flex-direction:column;gap:.5rem}
+  #pointer-prompt p{color:#ff9900;font-size:1.1rem;font-weight:700;letter-spacing:2px}
+  #pointer-prompt small{color:#666;font-size:.8rem}
+
+  canvas{display:block}
+</style>
+</head>
+<body>
+
+<!-- Lobby -->
+<div id="lobby">
+  <div class="logo">Play<span>OJO</span> Strike</div>
+  <div class="subtitle">Neon Arena Combat</div>
+  <input id="nameInput" placeholder="Enter your callsign..." maxlength="16">
+  <button id="joinBtn">DEPLOY</button>
+  <div class="controls-hint">
+    <b>WASD</b> Move &nbsp;|&nbsp; <b>Mouse</b> Aim &nbsp;|&nbsp; <b>Click</b> Shoot<br>
+    <b>R</b> Reload &nbsp;|&nbsp; <b>1/2/3</b> Weapons &nbsp;|&nbsp; <b>Tab</b> Scoreboard<br>
+    <b>Space</b> Jump &nbsp;|&nbsp; <b>Shift</b> Sprint
+  </div>
+</div>
+
+<!-- HUD -->
+<div id="hud">
+  <div id="crosshair"></div>
+  <div id="hitMarker">✕</div>
+  <div id="teamBadge"></div>
+  <div id="timerBox">—:——</div>
+  <div id="scorePanel">
+    <div class="score-row"><span class="s-ojo">OJO</span><span class="s-num s-ojo" id="sOJO">0</span></div>
+    <div class="score-row"><span class="s-str">STRIKE</span><span class="s-num s-str" id="sSTRIKE">0</span></div>
+  </div>
+  <div id="killfeed"></div>
+  <div id="healthBar">
+    <span id="healthIcon">❤️</span>
+    <div id="healthTrack"><div id="healthFill" style="width:100%"></div></div>
+    <span id="healthNum">100</span>
+  </div>
+  <div id="ammoBox">
+    <div id="ammoMain">30</div>
+    <div id="ammoReserve">/ 90</div>
+    <div id="weaponName">PLASMA RIFLE</div>
+  </div>
+  <div id="weaponBar">
+    <div class="wbtn active" data-w="rifle">1 RIFLE</div>
+    <div class="wbtn" data-w="pistol">2 PISTOL</div>
+    <div class="wbtn" data-w="sniper">3 SNIPER</div>
+  </div>
+</div>
+
+<!-- Pointer prompt -->
+<div id="pointer-prompt" style="display:none">
+  <p>🖱️ CLICK TO LOCK MOUSE</p>
+  <small>Press ESC to unlock</small>
+</div>
+
+<!-- Death screen -->
+<div id="deathScreen">
+  <h2>ELIMINATED</h2>
+  <p>You were taken down</p>
+  <div id="respawnTimer">Respawning in 5...</div>
+</div>
+
+<!-- Match over -->
+<div id="matchOver">
+  <h2 id="matchResult"></h2>
+  <p id="matchSubtitle" style="color:#aaa">New match starting soon...</p>
+  <button onclick="location.reload()">BACK TO LOBBY</button>
+</div>
+
+<!-- Scoreboard (Tab) -->
+<div id="scoreboard">
+  <div id="sbTitle">SCOREBOARD</div>
+  <table id="sbTable">
+    <thead><tr><th>PLAYER</th><th>TEAM</th><th>KILLS</th><th>DEATHS</th><th>K/D</th></tr></thead>
+    <tbody id="sbBody"></tbody>
+  </table>
+</div>
+
+<canvas id="c"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════
+//  PlayOJO Strike — Client
+// ══════════════════════════════════════════════════════════
+const socket = io();
+
+// ── Three.js setup ──────────────────────────────────────
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.setPixelRatio(devicePixelRatio);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050510);
+scene.fog = new THREE.Fog(0x050510, 20, 80);
+
+const cam = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 200);
+cam.position.set(0, 1.7, 0);
+
+window.addEventListener('resize', () => {
+  renderer.setSize(innerWidth, innerHeight);
+  cam.aspect = innerWidth / innerHeight;
+  cam.updateProjectionMatrix();
+});
+
+// ── Lighting ────────────────────────────────────────────
+scene.add(new THREE.AmbientLight(0x111133, 0.8));
+const dirLight = new THREE.DirectionalLight(0xffeedd, 0.6);
+dirLight.position.set(10, 20, 10);
+scene.add(dirLight);
+
+// Neon point lights
+[[0,4,0,'#ff6600'], [-15,3,-15,'#0066ff'], [15,3,15,'#ff0066'], [-15,3,15,'#00ffcc'], [15,3,-15,'#ff9900']]
+  .forEach(([x,y,z,c]) => {
+    const l = new THREE.PointLight(c, 1.5, 20);
+    l.position.set(x, y, z);
+    scene.add(l);
+  });
+
+// ── Map ─────────────────────────────────────────────────
+function mat(color, emissive=0x000000, emissiveIntensity=0) {
+  return new THREE.MeshStandardMaterial({ color, emissive, emissiveIntensity, roughness:0.8 });
+}
+function box(w,h,d,x,y,z,m) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), m);
+  mesh.position.set(x,y,z);
+  mesh.receiveShadow = mesh.castShadow = true;
+  scene.add(mesh); return mesh;
+}
+
+// Floor
+const floorMat = new THREE.MeshStandardMaterial({ color:0x0d0d1a, roughness:0.9 });
+box(80,0.2,80,0,0,0, floorMat);
+
+// Grid overlay
+const gridHelper = new THREE.GridHelper(80, 40, 0xff660033, 0x1a1a2e);
+gridHelper.position.y = 0.11;
+scene.add(gridHelper);
+
+// Outer walls (invisible colliders + visual)
+const wallMat = mat(0x111122, 0x001133, 0.5);
+box(80,6,1, 0,3,-40, wallMat); box(80,6,1, 0,3,40, wallMat);
+box(1,6,80, -40,3,0, wallMat); box(1,6,80, 40,3,0, wallMat);
+
+// Cover blocks
+const covers = [
+  [4,2,4,  -8,1, 0, mat(0x1a0533,0x6600ff,0.4)],
+  [4,2,4,   8,1, 0, mat(0x1a0533,0x6600ff,0.4)],
+  [2,3,8,   0,1.5,-10, mat(0x330011,0xff3300,0.3)],
+  [2,3,8,   0,1.5, 10, mat(0x330011,0xff3300,0.3)],
+  [8,1.5,2, -12,0.75,-6, mat(0x002233,0x0099ff,0.3)],
+  [8,1.5,2,  12,0.75, 6, mat(0x002233,0x0099ff,0.3)],
+  [3,4,3,  -15,2,-5, mat(0x1a1100,0xff9900,0.4)],
+  [3,4,3,   15,2, 5, mat(0x1a1100,0xff9900,0.4)],
+  [2,2,10,  -5,1,-18, mat(0x0d1a0d,0x00ff66,0.3)],
+  [2,2,10,   5,1, 18, mat(0x0d1a0d,0x00ff66,0.3)],
+];
+covers.forEach(([w,h,d,x,y,z,m]) => box(w,h,d,x,y,z,m));
+
+// Neon trim lines on walls
+function neonLine(x1,y1,z1,x2,y2,z2,color) {
+  const pts = [new THREE.Vector3(x1,y1,z1), new THREE.Vector3(x2,y2,z2)];
+  const geo = new THREE.BufferGeometry().setFromPoints(pts);
+  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({color}));
+  scene.add(line);
+}
+[[-39,0,-39,-39,5,-39],[39,0,-39,39,5,-39],[-39,0,39,-39,5,39],[39,0,39,39,5,39]]
+  .forEach(([x1,y1,z1,x2,y2,z2]) => neonLine(x1,y1,z1,x2,y2,z2,0xff6600));
+
+// ── Player meshes ────────────────────────────────────────
+const playerMeshes = {};
+const OJO_COLOR = 0xff6600, STRIKE_COLOR = 0x0066ff;
+
+function createPlayerMesh(team) {
+  const g = new THREE.Group();
+  const bodyMat = new THREE.MeshStandardMaterial({
+    color: team === 'OJO' ? OJO_COLOR : STRIKE_COLOR,
+    emissive: team === 'OJO' ? 0xff3300 : 0x003399,
+    emissiveIntensity: 0.4
+  });
+  // Body
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.6,1,0.4), bodyMat);
+  body.position.y = 0.5;
+  g.add(body);
+  // Head
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.45,0.45,0.45),
+    new THREE.MeshStandardMaterial({ color: 0xffcc99 }));
+  head.position.y = 1.25;
+  g.add(head);
+  // Gun
+  const gun = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.6),
+    new THREE.MeshStandardMaterial({ color: 0x222222, emissive:0x444444, emissiveIntensity:0.3 }));
+  gun.position.set(0.35, 1, -0.4);
+  g.add(gun);
+  scene.add(g);
+  return g;
+}
+
+// ── Input ────────────────────────────────────────────────
+const keys = {};
+let pitch = 0, yaw = 0;
+let pointerLocked = false;
+let myId = null, myTeam = null, alive = true;
+let health = 100;
+let shooting = false, lastShotClient = 0;
+let currentWeapon = 'rifle';
+const weaponFireRate = { rifle:150, pistol:400, sniper:1200 };
+const weaponNames = { rifle:'PLASMA RIFLE', pistol:'ION PISTOL', sniper:'VOID SNIPER' };
+let velocity = { x:0, y:0, z:0 };
+let onGround = true;
+const GRAVITY = -20, JUMP = 8, MOVE_SPEED = 8, SPRINT_SPEED = 13;
+
+document.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (e.code === 'KeyR') socket.emit('reload');
+  if (e.code === 'Digit1') switchWeapon('rifle');
+  if (e.code === 'Digit2') switchWeapon('pistol');
+  if (e.code === 'Digit3') switchWeapon('sniper');
+  if (e.code === 'Tab') { e.preventDefault(); showScoreboard(true); }
+  if (e.code === 'Space' && onGround && alive) { velocity.y = JUMP; onGround = false; }
+});
+document.addEventListener('keyup', e => {
+  keys[e.code] = false;
+  if (e.code === 'Tab') showScoreboard(false);
+});
+
+canvas.addEventListener('click', () => {
+  if (!pointerLocked && myId) canvas.requestPointerLock();
+});
+document.addEventListener('pointerlockchange', () => {
+  pointerLocked = !!document.pointerLockElement;
+  document.getElementById('pointer-prompt').style.display = pointerLocked ? 'none' : 'flex';
+});
+document.addEventListener('mousemove', e => {
+  if (!pointerLocked || !alive) return;
+  yaw   -= e.movementX * 0.002;
+  pitch -= e.movementY * 0.002;
+  pitch = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, pitch));
+});
+document.addEventListener('mousedown', e => { if (e.button === 0) shooting = true; });
+document.addEventListener('mouseup',   e => { if (e.button === 0) shooting = false; });
+
+// Weapon bar buttons
+document.querySelectorAll('.wbtn').forEach(btn => {
+  btn.addEventListener('click', () => switchWeapon(btn.dataset.w));
+});
+
+function switchWeapon(w) {
+  currentWeapon = w;
+  socket.emit('switchWeapon', { weapon: w });
+  document.querySelectorAll('.wbtn').forEach(b => b.classList.toggle('active', b.dataset.w === w));
+  document.getElementById('weaponName').textContent = weaponNames[w];
+}
+
+// ── Game state ───────────────────────────────────────────
+let remotePlayers = {};
+let inGame = false;
+
+// ── Socket events ────────────────────────────────────────
+socket.on('joined', data => {
+  myId = data.id; myTeam = data.player.team;
+  cam.position.set(data.player.x, data.player.y + 0.7, data.player.z);
+  inGame = true;
+  document.getElementById('lobby').style.display = 'none';
+  document.getElementById('hud').style.display = 'block';
+  document.getElementById('pointer-prompt').style.display = 'flex';
+  const badge = document.getElementById('teamBadge');
+  badge.textContent = `TEAM ${myTeam}`;
+  badge.className = `team-${myTeam}`;
+  if (data.roundActive) updateTimer(data.roundTimer);
+});
+
+socket.on('playerList', players => {
+  remotePlayers = players;
+  // Add/remove meshes
+  Object.entries(players).forEach(([id, p]) => {
+    if (id === myId) return;
+    if (!playerMeshes[id]) playerMeshes[id] = createPlayerMesh(p.team);
+    playerMeshes[id].position.set(p.x, p.y, p.z);
+    playerMeshes[id].visible = p.alive;
+  });
+  Object.keys(playerMeshes).forEach(id => {
+    if (!players[id]) { scene.remove(playerMeshes[id]); delete playerMeshes[id]; }
+  });
+});
+
+socket.on('playerMoved', ({ id, x, y, z, rotY }) => {
+  if (id === myId) return;
+  if (!playerMeshes[id]) return;
+  playerMeshes[id].position.set(x, y, z);
+  playerMeshes[id].rotation.y = rotY;
+  if (remotePlayers[id]) { remotePlayers[id].x=x; remotePlayers[id].y=y; remotePlayers[id].z=z; }
+});
+
+socket.on('playerHit', ({ id, health: hp }) => {
+  if (id === myId) { setHealth(hp); }
+  if (remotePlayers[id]) remotePlayers[id].health = hp;
+});
+
+socket.on('playerKilled', ({ id, killerName, victimName, killFeed }) => {
+  if (id === myId) showDeath();
+  if (playerMeshes[id]) playerMeshes[id].visible = false;
+  renderKillFeed(killFeed);
+});
+
+socket.on('playerRespawned', ({ id, x, y, z }) => {
+  if (id === myId) {
+    alive = true;
+    cam.position.set(x, y + 1.7, z);
+    setHealth(100);
+    hideDeath();
+  }
+  if (playerMeshes[id]) { playerMeshes[id].position.set(x,y,z); playerMeshes[id].visible = true; }
+});
+
+socket.on('roundStart', ({ players, scores }) => {
+  updateScores(scores);
+  remotePlayers = players;
+});
+
+socket.on('roundEnd', ({ winner, scores }) => {
+  updateScores(scores);
+  const msg = winner === 'draw' ? 'ROUND DRAW' : `TEAM ${winner} WINS THE ROUND`;
+  showRoundMsg(msg);
+});
+
+socket.on('matchOver', ({ winner, scores }) => {
+  const el = document.getElementById('matchOver');
+  const res = document.getElementById('matchResult');
+  res.textContent = winner === myTeam ? '🏆 YOUR TEAM WINS!' : '💀 DEFEATED';
+  res.style.color = winner === myTeam ? '#ff9900' : '#ff3300';
+  el.style.display = 'flex';
+  setTimeout(() => el.style.display = 'none', 8000);
+});
+
+socket.on('timerUpdate', updateTimer);
+socket.on('ammoUpdate', ({ ammo, reserve }) => {
+  document.getElementById('ammoMain').textContent = ammo;
+  document.getElementById('ammoReserve').textContent = `/ ${reserve}`;
+});
+socket.on('scoreUpdate', players => { remotePlayers = players; });
+socket.on('noAmmo', () => { document.getElementById('weaponName').textContent = '— RELOAD (R) —'; setTimeout(()=>document.getElementById('weaponName').textContent=weaponNames[currentWeapon],1500); });
+socket.on('playerShot', ({ id }) => { /* muzzle flash could go here */ });
+socket.on('serverFull', () => alert('Server is full (8 players max). Try again later.'));
+
+// ── UI helpers ───────────────────────────────────────────
+function setHealth(hp) {
+  health = Math.max(0, hp);
+  document.getElementById('healthFill').style.width = health + '%';
+  document.getElementById('healthNum').textContent = health;
+  const h = Math.max(0, Math.min(1, health/100));
+  document.getElementById('healthFill').style.background =
+    `linear-gradient(90deg,hsl(${h*30},100%,40%),hsl(${h*30+10},100%,50%))`;
+}
+
+function showDeath() {
+  alive = false;
+  document.getElementById('deathScreen').style.display = 'flex';
+  let t = 5;
+  const iv = setInterval(() => {
+    document.getElementById('respawnTimer').textContent = `Respawning in ${--t}...`;
+    if (t <= 0) clearInterval(iv);
+  }, 1000);
+}
+function hideDeath() { document.getElementById('deathScreen').style.display = 'none'; }
+
+function updateTimer(sec) {
+  const m = Math.floor(sec/60), s = sec%60;
+  document.getElementById('timerBox').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+function updateScores(sc) {
+  document.getElementById('sOJO').textContent = sc.OJO;
+  document.getElementById('sSTRIKE').textContent = sc.STRIKE;
+}
+
+function renderKillFeed(kf) {
+  const el = document.getElementById('killfeed');
+  el.innerHTML = kf.slice(0,5).map(k =>
+    `<div class="kf-entry"><span class="kf-killer">${k.killer}</span><span class="kf-gun"> [${k.weapon}] </span><span class="kf-victim">${k.victim}</span></div>`
+  ).join('');
+}
+
+function showScoreboard(show) {
+  const sb = document.getElementById('scoreboard');
+  if (show) {
+    sb.classList.add('show');
+    const tbody = document.getElementById('sbBody');
+    const sorted = Object.values(remotePlayers).sort((a,b) => b.kills - a.kills);
+    tbody.innerHTML = sorted.map(p => {
+      const kd = p.deaths ? (p.kills/p.deaths).toFixed(2) : p.kills.toFixed(2);
+      return `<tr class="sb-${p.team.toLowerCase()}">
+        <td>${p.name}${p.id===myId?' ★':''}</td>
+        <td>${p.team}</td><td>${p.kills}</td><td>${p.deaths}</td><td>${kd}</td>
+      </tr>`;
+    }).join('');
+  } else sb.classList.remove('show');
+}
+
+let roundMsgTimeout;
+function showRoundMsg(msg) {
+  const el = document.createElement('div');
+  el.style.cssText='position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);font-size:2rem;font-weight:900;color:#ff9900;text-shadow:0 0 20px #ff660088;z-index:40;pointer-events:none;letter-spacing:4px';
+  el.textContent = msg; document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// Hit marker flash
+socket.on('playerHit', ({ id }) => {
+  if (remotePlayers[id] && remotePlayers[id].team !== myTeam) {
+    const hm = document.getElementById('hitMarker');
+    hm.style.opacity = '1';
+    setTimeout(() => hm.style.opacity = '0', 150);
+  }
+});
+
+// ── Movement & shooting loop ─────────────────────────────
+const clock = new THREE.Clock();
+const moveDir = new THREE.Vector3();
+const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+
+function getShootDir() {
+  euler.set(pitch, yaw, 0);
+  const dir = new THREE.Vector3(0, 0, -1).applyEuler(euler).normalize();
+  return dir;
+}
+
+let sendMoveTimer = 0;
+
+function update(dt) {
+  if (!inGame || !alive) return;
+
+  // Apply gravity
+  velocity.y += GRAVITY * dt;
+
+  // Horizontal movement
+  const speed = keys['ShiftLeft'] || keys['ShiftRight'] ? SPRINT_SPEED : MOVE_SPEED;
+  const fw = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
+  const rt = new THREE.Vector3(Math.cos(yaw),  0, -Math.sin(yaw));
+  moveDir.set(0, 0, 0);
+  if (keys['KeyW']) moveDir.add(fw);
+  if (keys['KeyS']) moveDir.sub(fw);
+  if (keys['KeyA']) moveDir.sub(rt);
+  if (keys['KeyD']) moveDir.add(rt);
+  if (moveDir.lengthSq() > 0) moveDir.normalize();
+  velocity.x = moveDir.x * speed;
+  velocity.z = moveDir.z * speed;
+
+  // Move
+  cam.position.x += velocity.x * dt;
+  cam.position.y += velocity.y * dt;
+  cam.position.z += velocity.z * dt;
+
+  // Floor clamp
+  if (cam.position.y < 1.7) { cam.position.y = 1.7; velocity.y = 0; onGround = true; }
+
+  // Arena boundary
+  cam.position.x = Math.max(-39, Math.min(39, cam.position.x));
+  cam.position.z = Math.max(-39, Math.min(39, cam.position.z));
+
+  // Camera rotation
+  euler.set(pitch, yaw, 0);
+  cam.quaternion.setFromEuler(euler);
+
+  // Emit position
+  sendMoveTimer += dt;
+  if (sendMoveTimer > 0.05) {
+    sendMoveTimer = 0;
+    socket.emit('move', {
+      x: cam.position.x, y: cam.position.y - 1.7,
+      z: cam.position.z, rotY: yaw
+    });
+  }
+
+  // Shoot
+  if (shooting && pointerLocked) {
+    const now = Date.now();
+    if (now - lastShotClient >= weaponFireRate[currentWeapon]) {
+      lastShotClient = now;
+      const dir = getShootDir();
+      socket.emit('shoot', { dirX: dir.x, dirY: dir.y, dirZ: dir.z });
+      if (currentWeapon !== 'rifle') shooting = false; // semi-auto
+    }
+  }
+}
+
+// ── Render loop ──────────────────────────────────────────
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  update(dt);
+  renderer.render(scene, cam);
+}
+animate();
+
+// ── Join handler ─────────────────────────────────────────
+document.getElementById('joinBtn').addEventListener('click', () => {
+  const name = document.getElementById('nameInput').value.trim() || 'OJO Player';
+  socket.emit('join', { name });
+});
+document.getElementById('nameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('joinBtn').click();
+});
+</script>
+</body>
+</html>
