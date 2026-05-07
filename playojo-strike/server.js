@@ -172,56 +172,22 @@ io.on('connection', socket => {
     shooter.ammo--;
     socket.emit('ammoUpdate', { ammo: shooter.ammo, reserve: shooter.reserve });
 
-    // Broadcast laser to others so they can see it
-    socket.broadcast.emit('playerShot', {
-      id: socket.id, team: shooter.team,
-      x: shooter.x, y: shooter.y, z: shooter.z,
-      dx: dirX, dy: dirY, dz: dirZ
-    });
+    // Broadcast muzzle flash to others
+    socket.broadcast.emit('playerShot', { id: socket.id });
 
-    // Raycast hit detection (server-authoritative)
+    // Raycast hit detection (server-authoritative, simplified sphere check)
     const ox = shooter.x, oy = shooter.y + 0.8, oz = shooter.z;
     let hit = null, minT = Infinity;
-
-    // Cover box definitions (must match client) — [w,h,d,x,y,z]
-    const BOXES = [
-      [4,2,4,  -8,1, 0], [4,2,4,   8,1, 0],
-      [2,3,8,   0,1.5,-10], [2,3,8,   0,1.5, 10],
-      [8,1.5,2,-12,0.75,-6],[8,1.5,2, 12,0.75, 6],
-      [3,4,3, -15,2,-5],   [3,4,3,  15,2, 5],
-      [2,2,10, -5,1,-18],  [2,2,10,  5,1, 18],
-    ];
-
-    // Ray-AABB intersection (slab method) — returns t or Infinity
-    function rayBox(bx,by,bz,bw,bh,bd) {
-      const minX=bx-bw/2,maxX=bx+bw/2;
-      const minY=by-bh/2,maxY=by+bh/2;
-      const minZ=bz-bd/2,maxZ=bz+bd/2;
-      const tx1=(minX-ox)/dirX, tx2=(maxX-ox)/dirX;
-      const ty1=(minY-oy)/dirY, ty2=(maxY-oy)/dirY;
-      const tz1=(minZ-oz)/dirZ, tz2=(maxZ-oz)/dirZ;
-      const tmin=Math.max(Math.min(tx1,tx2),Math.min(ty1,ty2),Math.min(tz1,tz2));
-      const tmax=Math.min(Math.max(tx1,tx2),Math.max(ty1,ty2),Math.max(tz1,tz2));
-      return tmax>=0 && tmin<=tmax ? Math.max(0,tmin) : Infinity;
-    }
-
-    // Find closest box hit distance to use as occlusion cutoff
-    let boxBlock = Infinity;
-    BOXES.forEach(([w,h,d,x,y,z]) => {
-      const t = rayBox(x,y,z,w,h,d);
-      if (t < boxBlock) boxBlock = t;
-    });
-
-    // Check players — only register hit if closer than blocking box
     Object.values(players).forEach(target => {
       if (target.id === socket.id || !target.alive || target.team === shooter.team) return;
+      // Sphere radius ~0.5, check ray-sphere intersection
       const dx = target.x - ox, dy = (target.y + 0.8) - oy, dz = target.z - oz;
       const dot = dx * dirX + dy * dirY + dz * dirZ;
-      if (dot < 0 || dot >= boxBlock) return; // box is in the way
+      if (dot < 0) return;
       const cx = ox + dirX * dot - target.x;
       const cy = oy + dirY * dot - (target.y + 0.8);
       const cz = oz + dirZ * dot - target.z;
-      const distSq = cx*cx + cy*cy + cz*cz;
+      const distSq = cx * cx + cy * cy + cz * cz;
       if (distSq < 0.6 && dot < minT) { minT = dot; hit = target; }
     });
 
