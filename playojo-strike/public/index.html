@@ -265,6 +265,27 @@ coverDefs.forEach(([w,h,d,x,y,z,m]) => {
   });
 });
 
+// Logo on walls
+const logoURL = 'https://aws-origin.image-tech-storage.com/tenants/playojo/playojo.com/_nuxt/logo_en.BG7Z5U3Q.png';
+const logoTex = new THREE.TextureLoader().load(logoURL);
+logoTex.colorSpace = THREE.SRGBColorSpace;
+const logoMat = new THREE.MeshBasicMaterial({ map: logoTex, transparent: true, depthWrite: false });
+
+function addLogo(w, h, x, y, z, rotY) {
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), logoMat.clone());
+  mesh.position.set(x, y, z);
+  mesh.rotation.y = rotY;
+  scene.add(mesh);
+}
+// North wall (facing south)
+addLogo(8, 4, 0, 3.5, -39.4, 0);
+// South wall (facing north)
+addLogo(8, 4, 0, 3.5,  39.4, Math.PI);
+// East wall (facing west)
+addLogo(8, 4,  39.4, 3.5, 0, -Math.PI / 2);
+// West wall (facing east)
+addLogo(8, 4, -39.4, 3.5, 0,  Math.PI / 2);
+
 // Neon trim lines on walls
 function neonLine(x1,y1,z1,x2,y2,z2,color) {
   const pts = [new THREE.Vector3(x1,y1,z1), new THREE.Vector3(x2,y2,z2)];
