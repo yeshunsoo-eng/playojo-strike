@@ -11,8 +11,7 @@
   #lobby,#deathScreen,#matchOver,#hud{position:fixed;inset:0}
   #lobby{display:flex;flex-direction:column;align-items:center;justify-content:center;
     background:linear-gradient(135deg,#0a0a0f 0%,#1a0a00 100%);z-index:100}
-  .logo{font-size:3rem;font-weight:900;letter-spacing:4px;margin-bottom:.2rem}
-  .logo span{color:#ff6600}
+  .logo img{width:160px;margin-bottom:.5rem;filter:drop-shadow(0 0 12px #ff660088)}
   .subtitle{font-size:1.1rem;color:#ff6600;letter-spacing:6px;margin-bottom:2.5rem;text-transform:uppercase}
   #lobby input{padding:12px 20px;font-size:1rem;border-radius:8px;border:2px solid #ff6600;
     background:#111;color:#fff;text-align:center;width:260px;margin-bottom:1rem;outline:none}
@@ -105,7 +104,7 @@
 
 <!-- Lobby -->
 <div id="lobby">
-  <div class="logo">Play<span>OJO</span> Strike</div>
+  <div class="logo"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/PlayOJO_logo.svg/320px-PlayOJO_logo.svg.png" alt="PlayOJO" onerror="this.replaceWith(Object.assign(document.createElement('span'),{innerHTML:'Play<b style=color:#ff6600>OJO</b> Strike',style:'font-size:3rem;font-weight:900;letter-spacing:4px'}))"></div>
   <div class="subtitle">Neon Arena Combat</div>
   <input id="nameInput" placeholder="Enter your callsign..." maxlength="16">
   <button id="joinBtn">DEPLOY</button>
@@ -324,12 +323,22 @@ document.addEventListener('keyup', e => {
   if (e.code === 'Tab') showScoreboard(false);
 });
 
-canvas.addEventListener('click', () => {
-  if (!pointerLocked && myId) canvas.requestPointerLock();
-});
+// Pointer lock — click anywhere on the prompt or canvas to lock
+function requestLock() {
+  if (!myId) return;
+  const req = canvas.requestPointerLock();
+  if (req && typeof req.catch === 'function') req.catch(() => {});
+}
+canvas.addEventListener('click', requestLock);
+document.getElementById('pointer-prompt').addEventListener('click', requestLock);
+
 document.addEventListener('pointerlockchange', () => {
-  pointerLocked = !!document.pointerLockElement;
-  document.getElementById('pointer-prompt').style.display = pointerLocked ? 'none' : 'flex';
+  pointerLocked = document.pointerLockElement === canvas;
+  document.getElementById('pointer-prompt').style.display = pointerLocked ? 'none' : (myId && alive ? 'flex' : 'none');
+});
+document.addEventListener('pointerlockerror', () => {
+  // Retry after short delay (browser sometimes blocks immediate re-lock)
+  setTimeout(requestLock, 500);
 });
 document.addEventListener('mousemove', e => {
   if (!pointerLocked || !alive) return;
