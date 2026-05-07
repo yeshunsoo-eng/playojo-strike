@@ -305,37 +305,41 @@ function createPlayerMesh(team) {
 }
 
 // ── Collision helpers ────────────────────────────────────
-const PLAYER_R = 0.35; // horizontal radius
-const PLAYER_H = 1.8;  // height
+const PLAYER_R = 0.35;
+const PLAYER_H = 1.8;
 
-function resolveCollision(pos) {
-  // pos = {x, y, z} = camera position (feet = y - PLAYER_H)
-  const feetY = pos.y - PLAYER_H;
-  colliders.forEach(c => {
-    const px = pos.x, py = feetY + PLAYER_H/2, pz = pos.z;
-    const hh = PLAYER_H / 2;
-    // Check overlap
-    const ox = Math.max(c.minX - PLAYER_R, Math.min(px, c.maxX + PLAYER_R));
-    const oy = Math.max(c.minY, Math.min(py, c.maxY));
-    const oz = Math.max(c.minZ - PLAYER_R, Math.min(pz, c.maxZ + PLAYER_R));
-    if (Math.abs(ox-px) < PLAYER_R + (c.maxX-c.minX)/2 &&
-        Math.abs(oy-py) < hh + (c.maxY-c.minY)/2 &&
-        Math.abs(oz-pz) < PLAYER_R + (c.maxZ-c.minZ)/2) {
-      // Find shallowest axis to push out on
-      const overlapX = (PLAYER_R + (c.maxX-c.minX)/2) - Math.abs(px - (c.minX+c.maxX)/2);
-      const overlapY = (hh + (c.maxY-c.minY)/2)       - Math.abs(py - (c.minY+c.maxY)/2);
-      const overlapZ = (PLAYER_R + (c.maxZ-c.minZ)/2) - Math.abs(pz - (c.minZ+c.maxZ)/2);
-      if (overlapX < overlapY && overlapX < overlapZ) {
-        pos.x += px < (c.minX+c.maxX)/2 ? -overlapX : overlapX;
-      } else if (overlapZ < overlapY) {
-        pos.z += pz < (c.minZ+c.maxZ)/2 ? -overlapZ : overlapZ;
-      } else {
-        // Vertical push — landing on top
-        if (py < (c.minY+c.maxY)/2) { pos.y -= overlapY; velocity.y = 0; }
-        else { pos.y += overlapY; velocity.y = 0; onGround = true; }
-      }
-    }
-  });
+// Check if a point (x, y, z) where y is camera height overlaps a collider
+function overlapsCollider(x, y, z, c) {
+  const feetY = y - PLAYER_H;
+  return (
+    x + PLAYER_R > c.minX && x - PLAYER_R < c.maxX &&
+    feetY        < c.maxY && feetY + PLAYER_H > c.minY &&
+    z + PLAYER_R > c.minZ && z - PLAYER_R < c.maxZ
+  );
+}
+
+// Move with per-axis collision — prevents sticking
+function moveWithCollision(pos, dx, dy, dz) {
+  // Try X
+  const nx = pos.x + dx;
+  const colX = colliders.some(c => overlapsCollider(nx, pos.y, pos.z, c));
+  if (!colX) pos.x = nx;
+  else velocity.x = 0;
+
+  // Try Z
+  const nz = pos.z + dz;
+  const colZ = colliders.some(c => overlapsCollider(pos.x, pos.y, nz, c));
+  if (!colZ) pos.z = nz;
+  else velocity.z = 0;
+
+  // Try Y (gravity / jumping)
+  const ny = pos.y + dy;
+  const colY = colliders.some(c => overlapsCollider(pos.x, ny, pos.z, c));
+  if (!colY) pos.y = ny;
+  else {
+    if (velocity.y < 0) onGround = true;
+    velocity.y = 0;
+  }
 }
 const keys = {};
 let pitch = 0, yaw = 0;
@@ -596,13 +600,8 @@ function update(dt) {
   velocity.x = moveDir.x * speed;
   velocity.z = moveDir.z * speed;
 
-  // Move
-  cam.position.x += velocity.x * dt;
-  cam.position.y += velocity.y * dt;
-  cam.position.z += velocity.z * dt;
-
-  // Resolve box collisions
-  resolveCollision(cam.position);
+  // Move with per-axis collision
+  moveWithCollision(cam.position, velocity.x * dt, velocity.y * dt, velocity.z * dt);
 
   // Floor clamp
   if (cam.position.y < 1.7) { cam.position.y = 1.7; velocity.y = 0; onGround = true; }
