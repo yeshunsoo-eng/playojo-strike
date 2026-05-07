@@ -241,8 +241,8 @@ const wallMat = mat(0x111122, 0x001133, 0.5);
 box(80,6,1, 0,3,-40, wallMat); box(80,6,1, 0,3,40, wallMat);
 box(1,6,80, -40,3,0, wallMat); box(1,6,80, 40,3,0, wallMat);
 
-// Cover blocks
-const covers = [
+// Cover blocks — store dimensions for collision
+const coverDefs = [
   [4,2,4,  -8,1, 0, mat(0x1a0533,0x6600ff,0.4)],
   [4,2,4,   8,1, 0, mat(0x1a0533,0x6600ff,0.4)],
   [2,3,8,   0,1.5,-10, mat(0x330011,0xff3300,0.3)],
@@ -254,7 +254,16 @@ const covers = [
   [2,2,10,  -5,1,-18, mat(0x0d1a0d,0x00ff66,0.3)],
   [2,2,10,   5,1, 18, mat(0x0d1a0d,0x00ff66,0.3)],
 ];
-covers.forEach(([w,h,d,x,y,z,m]) => box(w,h,d,x,y,z,m));
+// AABB colliders: {minX,maxX,minY,maxY,minZ,maxZ}
+const colliders = [];
+coverDefs.forEach(([w,h,d,x,y,z,m]) => {
+  box(w,h,d,x,y,z,m);
+  colliders.push({
+    minX: x - w/2, maxX: x + w/2,
+    minY: y - h/2, maxY: y + h/2,
+    minZ: z - d/2, maxZ: z + d/2
+  });
+});
 
 // Neon trim lines on walls
 function neonLine(x1,y1,z1,x2,y2,z2,color) {
@@ -295,7 +304,39 @@ function createPlayerMesh(team) {
   return g;
 }
 
-// ── Input ────────────────────────────────────────────────
+// ── Collision helpers ────────────────────────────────────
+const PLAYER_R = 0.35; // horizontal radius
+const PLAYER_H = 1.8;  // height
+
+function resolveCollision(pos) {
+  // pos = {x, y, z} = camera position (feet = y - PLAYER_H)
+  const feetY = pos.y - PLAYER_H;
+  colliders.forEach(c => {
+    const px = pos.x, py = feetY + PLAYER_H/2, pz = pos.z;
+    const hh = PLAYER_H / 2;
+    // Check overlap
+    const ox = Math.max(c.minX - PLAYER_R, Math.min(px, c.maxX + PLAYER_R));
+    const oy = Math.max(c.minY, Math.min(py, c.maxY));
+    const oz = Math.max(c.minZ - PLAYER_R, Math.min(pz, c.maxZ + PLAYER_R));
+    if (Math.abs(ox-px) < PLAYER_R + (c.maxX-c.minX)/2 &&
+        Math.abs(oy-py) < hh + (c.maxY-c.minY)/2 &&
+        Math.abs(oz-pz) < PLAYER_R + (c.maxZ-c.minZ)/2) {
+      // Find shallowest axis to push out on
+      const overlapX = (PLAYER_R + (c.maxX-c.minX)/2) - Math.abs(px - (c.minX+c.maxX)/2);
+      const overlapY = (hh + (c.maxY-c.minY)/2)       - Math.abs(py - (c.minY+c.maxY)/2);
+      const overlapZ = (PLAYER_R + (c.maxZ-c.minZ)/2) - Math.abs(pz - (c.minZ+c.maxZ)/2);
+      if (overlapX < overlapY && overlapX < overlapZ) {
+        pos.x += px < (c.minX+c.maxX)/2 ? -overlapX : overlapX;
+      } else if (overlapZ < overlapY) {
+        pos.z += pz < (c.minZ+c.maxZ)/2 ? -overlapZ : overlapZ;
+      } else {
+        // Vertical push — landing on top
+        if (py < (c.minY+c.maxY)/2) { pos.y -= overlapY; velocity.y = 0; }
+        else { pos.y += overlapY; velocity.y = 0; onGround = true; }
+      }
+    }
+  });
+}
 const keys = {};
 let pitch = 0, yaw = 0;
 let pointerLocked = false;
@@ -560,6 +601,9 @@ function update(dt) {
   cam.position.y += velocity.y * dt;
   cam.position.z += velocity.z * dt;
 
+  // Resolve box collisions
+  resolveCollision(cam.position);
+
   // Floor clamp
   if (cam.position.y < 1.7) { cam.position.y = 1.7; velocity.y = 0; onGround = true; }
 
@@ -581,14 +625,15 @@ function update(dt) {
     });
   }
 
-  // Shoot
-  if (shooting && pointerLocked) {
+  // Shoot — handle auto (rifle) and semi-auto (pistol/sniper)
+  if (pointerLocked && alive) {
     const now = Date.now();
-    if (now - lastShotClient >= weaponFireRate[currentWeapon]) {
+    if (shooting && now - lastShotClient >= weaponFireRate[currentWeapon]) {
       lastShotClient = now;
       const dir = getShootDir();
       socket.emit('shoot', { dirX: dir.x, dirY: dir.y, dirZ: dir.z });
-      if (currentWeapon !== 'rifle') shooting = false; // semi-auto
+      // Semi-auto: require mouse release between shots
+      if (currentWeapon !== 'rifle') shooting = false;
     }
   }
 }
