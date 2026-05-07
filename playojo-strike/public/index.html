@@ -5,40 +5,36 @@
 <title>PlayOJO Strike</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:#0a0a0f;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hidden}
+  body{background:#1a1a2e;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hidden}
 
-  /* ── Screens ── */
   #lobby,#deathScreen,#matchOver,#hud{position:fixed;inset:0}
   #lobby{display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:linear-gradient(135deg,#0a0a0f 0%,#1a0a00 100%);z-index:100}
-  .logo img{width:160px;margin-bottom:.5rem;filter:drop-shadow(0 0 12px #ff660088)}
+    background:linear-gradient(135deg,#1a1a2e 0%,#2d1a00 100%);z-index:100}
+  .logo img{width:180px;margin-bottom:.5rem;filter:drop-shadow(0 0 16px #ff660099)}
   .subtitle{font-size:1.1rem;color:#ff6600;letter-spacing:6px;margin-bottom:2.5rem;text-transform:uppercase}
   #lobby input{padding:12px 20px;font-size:1rem;border-radius:8px;border:2px solid #ff6600;
-    background:#111;color:#fff;text-align:center;width:260px;margin-bottom:1rem;outline:none}
+    background:#222;color:#fff;text-align:center;width:260px;margin-bottom:1rem;outline:none}
   #lobby button{padding:14px 40px;font-size:1.1rem;font-weight:700;border:none;border-radius:8px;
     background:linear-gradient(90deg,#ff6600,#ff9900);color:#fff;cursor:pointer;letter-spacing:2px;
     text-transform:uppercase;transition:.2s}
-  #lobby button:hover{transform:scale(1.05);box-shadow:0 0 20px #ff660088}
-  .controls-hint{margin-top:2rem;font-size:.8rem;color:#666;line-height:1.8;text-align:center}
+  #lobby button:hover{transform:scale(1.05);box-shadow:0 0 24px #ff660099}
+  .controls-hint{margin-top:2rem;font-size:.8rem;color:#888;line-height:1.8;text-align:center}
   .controls-hint b{color:#ff6600}
 
-  /* ── HUD ── */
   #hud{pointer-events:none;display:none;z-index:10}
-  #crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    width:20px;height:20px;opacity:.85}
+  #crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;opacity:.9}
   #crosshair::before,#crosshair::after{content:'';position:absolute;background:#ff6600;border-radius:2px}
   #crosshair::before{width:2px;height:100%;left:50%;transform:translateX(-50%)}
   #crosshair::after{width:100%;height:2px;top:50%;transform:translateY(-50%)}
 
   #healthBar{position:absolute;bottom:40px;left:40px;display:flex;align-items:center;gap:12px}
-  #healthIcon{font-size:1.4rem}
   #healthTrack{width:180px;height:14px;background:#333;border-radius:7px;overflow:hidden;border:1px solid #555}
   #healthFill{height:100%;background:linear-gradient(90deg,#ff3300,#ff6600);transition:.2s;border-radius:7px}
   #healthNum{font-size:.9rem;font-weight:700;color:#ff6600;min-width:36px}
 
   #ammoBox{position:absolute;bottom:40px;right:40px;text-align:right}
   #ammoMain{font-size:2.5rem;font-weight:900;color:#ff6600;line-height:1}
-  #ammoReserve{font-size:1rem;color:#888}
+  #ammoReserve{font-size:1rem;color:#aaa}
   #weaponName{font-size:.75rem;letter-spacing:3px;color:#ff9900;text-transform:uppercase;margin-top:4px}
 
   #teamBadge{position:absolute;top:20px;left:50%;transform:translateX(-50%);
@@ -49,10 +45,9 @@
   #timerBox{position:absolute;top:20px;left:50%;transform:translateX(-50%) translateY(40px);
     font-size:1.6rem;font-weight:900;color:#fff;text-shadow:0 0 10px #ff6600}
 
-  #scorePanel{position:absolute;top:20px;left:20px;background:#00000088;border-radius:8px;
-    padding:10px 16px;border:1px solid #333;min-width:100px}
+  #scorePanel{position:absolute;top:20px;left:20px;background:#00000066;border-radius:8px;
+    padding:10px 16px;border:1px solid #444;min-width:100px}
   .score-row{display:flex;justify-content:space-between;gap:12px;font-size:.85rem;margin-bottom:4px}
-  .score-row:last-child{margin-bottom:0}
   .s-ojo{color:#ff9900;font-weight:700}.s-str{color:#66aaff;font-weight:700}
   .s-num{font-size:1.1rem;font-weight:900}
 
@@ -60,11 +55,11 @@
   .kf-entry{background:#000000aa;padding:5px 10px;border-radius:4px;font-size:.78rem;
     border-left:3px solid #ff6600;animation:fadeKF 4s forwards}
   @keyframes fadeKF{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
-  .kf-killer{color:#ff9900;font-weight:700}.kf-victim{color:#ccc}
-  .kf-gun{color:#666;font-size:.7rem;margin:0 4px}
+  .kf-killer{color:#ff9900;font-weight:700}.kf-victim{color:#ddd}
+  .kf-gun{color:#888;font-size:.7rem;margin:0 4px}
 
   #weaponBar{position:absolute;bottom:90px;right:40px;display:flex;gap:8px}
-  .wbtn{padding:5px 12px;border-radius:4px;border:1px solid #444;background:#111;
+  .wbtn{padding:5px 12px;border-radius:4px;border:1px solid #555;background:#1a1a1a;
     color:#888;font-size:.75rem;cursor:pointer;letter-spacing:1px;pointer-events:all}
   .wbtn.active{border-color:#ff6600;color:#ff9900;background:#ff660022}
 
@@ -88,24 +83,23 @@
   #scoreboard.show{display:flex}
   #sbTable{width:560px;border-collapse:collapse}
   #sbTable th{background:#ff660033;color:#ff9900;padding:8px 12px;font-size:.8rem;letter-spacing:2px}
-  #sbTable td{padding:8px 12px;border-bottom:1px solid #222;font-size:.85rem;text-align:center}
+  #sbTable td{padding:8px 12px;border-bottom:1px solid #333;font-size:.85rem;text-align:center}
   .sb-ojo td:first-child{color:#ff9900}.sb-str td:first-child{color:#66aaff}
   #sbTitle{font-size:1.5rem;font-weight:900;color:#ff6600;letter-spacing:4px;margin-bottom:1rem}
 
-  #pointer-prompt{position:fixed;inset:0;background:#000000bb;display:flex;align-items:center;
+  #pointer-prompt{position:fixed;inset:0;background:#000000aa;display:flex;align-items:center;
     justify-content:center;z-index:20;flex-direction:column;gap:.5rem}
   #pointer-prompt p{color:#ff9900;font-size:1.1rem;font-weight:700;letter-spacing:2px}
-  #pointer-prompt small{color:#666;font-size:.8rem}
+  #pointer-prompt small{color:#888;font-size:.8rem}
 
   canvas{display:block}
 </style>
 </head>
 <body>
 
-<!-- Lobby -->
 <div id="lobby">
-  <div class="logo"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/PlayOJO_logo.svg/320px-PlayOJO_logo.svg.png" alt="PlayOJO" onerror="this.replaceWith(Object.assign(document.createElement('span'),{innerHTML:'Play<b style=color:#ff6600>OJO</b> Strike',style:'font-size:3rem;font-weight:900;letter-spacing:4px'}))"></div>
-  <div class="subtitle">Neon Arena Combat</div>
+  <div class="logo"><img src="https://aws-origin.image-tech-storage.com/tenants/playojo/playojo.com/_nuxt/logo_en.BG7Z5U3Q.png" alt="PlayOJO"></div>
+  <div class="subtitle">PPC Team Game</div>
   <input id="nameInput" placeholder="Enter your callsign..." maxlength="16">
   <button id="joinBtn">DEPLOY</button>
   <div class="controls-hint">
@@ -115,7 +109,6 @@
   </div>
 </div>
 
-<!-- HUD -->
 <div id="hud">
   <div id="crosshair"></div>
   <div id="hitMarker">✕</div>
@@ -127,7 +120,7 @@
   </div>
   <div id="killfeed"></div>
   <div id="healthBar">
-    <span id="healthIcon">❤️</span>
+    <span>❤️</span>
     <div id="healthTrack"><div id="healthFill" style="width:100%"></div></div>
     <span id="healthNum">100</span>
   </div>
@@ -143,27 +136,23 @@
   </div>
 </div>
 
-<!-- Pointer prompt -->
 <div id="pointer-prompt" style="display:none">
   <p>🖱️ CLICK TO LOCK MOUSE</p>
   <small>Press ESC to unlock</small>
 </div>
 
-<!-- Death screen -->
 <div id="deathScreen">
   <h2>ELIMINATED</h2>
   <p>You were taken down</p>
   <div id="respawnTimer">Respawning in 5...</div>
 </div>
 
-<!-- Match over -->
 <div id="matchOver">
   <h2 id="matchResult"></h2>
-  <p id="matchSubtitle" style="color:#aaa">New match starting soon...</p>
+  <p style="color:#aaa">New match starting soon...</p>
   <button onclick="location.reload()">BACK TO LOBBY</button>
 </div>
 
-<!-- Scoreboard (Tab) -->
 <div id="scoreboard">
   <div id="sbTitle">SCOREBOARD</div>
   <table id="sbTable">
@@ -177,12 +166,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-// ══════════════════════════════════════════════════════════
-//  PlayOJO Strike — Client
-// ══════════════════════════════════════════════════════════
 const socket = io();
 
-// ── Three.js setup ──────────────────────────────────────
+// ── Renderer ────────────────────────────────────────────
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setSize(innerWidth, innerHeight);
@@ -190,8 +176,8 @@ renderer.shadowMap.enabled = true;
 renderer.setPixelRatio(devicePixelRatio);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x050510);
-scene.fog = new THREE.Fog(0x050510, 20, 80);
+scene.background = new THREE.Color(0x2a2a4a); // brighter background
+scene.fog = new THREE.Fog(0x2a2a4a, 25, 90);
 
 const cam = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 200);
 cam.position.set(0, 1.7, 0);
@@ -202,23 +188,25 @@ window.addEventListener('resize', () => {
   cam.updateProjectionMatrix();
 });
 
-// ── Lighting ────────────────────────────────────────────
-scene.add(new THREE.AmbientLight(0x111133, 0.8));
-const dirLight = new THREE.DirectionalLight(0xffeedd, 0.6);
-dirLight.position.set(10, 20, 10);
-scene.add(dirLight);
+// ── Lighting (brighter) ──────────────────────────────────
+scene.add(new THREE.AmbientLight(0xaaaacc, 1.2));
+const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+sun.position.set(10, 30, 10);
+sun.castShadow = true;
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0xffeedd, 0.6);
+fill.position.set(-10, 10, -10);
+scene.add(fill);
 
 // Neon point lights
-[[0,4,0,'#ff6600'], [-15,3,-15,'#0066ff'], [15,3,15,'#ff0066'], [-15,3,15,'#00ffcc'], [15,3,-15,'#ff9900']]
-  .forEach(([x,y,z,c]) => {
-    const l = new THREE.PointLight(c, 1.5, 20);
-    l.position.set(x, y, z);
-    scene.add(l);
-  });
+[[0,5,0,'#ff6600',2],[−15,4,−15,'#0099ff',1.8],[15,4,15,'#ff0088',1.8],
+ [−15,4,15,'#00ffcc',1.5],[15,4,−15,'#ffcc00',1.5]].forEach(([x,y,z,c,i])=>{
+  const l = new THREE.PointLight(c, i, 30); l.position.set(x,y,z); scene.add(l);
+});
 
-// ── Map ─────────────────────────────────────────────────
-function mat(color, emissive=0x000000, emissiveIntensity=0) {
-  return new THREE.MeshStandardMaterial({ color, emissive, emissiveIntensity, roughness:0.8 });
+// ── Helpers ──────────────────────────────────────────────
+function mat(color, emissive=0x000000, ei=0) {
+  return new THREE.MeshStandardMaterial({ color, emissive, emissiveIntensity: ei, roughness:0.7 });
 }
 function box(w,h,d,x,y,z,m) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), m);
@@ -227,453 +215,452 @@ function box(w,h,d,x,y,z,m) {
   scene.add(mesh); return mesh;
 }
 
-// Floor
-const floorMat = new THREE.MeshStandardMaterial({ color:0x0d0d1a, roughness:0.9 });
-box(80,0.2,80,0,0,0, floorMat);
+// ── Floor ────────────────────────────────────────────────
+box(80,0.2,80, 0,0,0, mat(0x1a1a3a));
+const grid = new THREE.GridHelper(80, 40, 0xff6600, 0x333355);
+grid.position.y = 0.11; scene.add(grid);
 
-// Grid overlay
-const gridHelper = new THREE.GridHelper(80, 40, 0xff660033, 0x1a1a2e);
-gridHelper.position.y = 0.11;
-scene.add(gridHelper);
+// ── Walls ────────────────────────────────────────────────
+const wallMat = mat(0x222244, 0x000833, 0.3);
+box(80,8,1, 0,4,−40, wallMat); box(80,8,1, 0,4,40, wallMat);
+box(1,8,80, −40,4,0, wallMat); box(1,8,80, 40,4,0, wallMat);
 
-// Outer walls (invisible colliders + visual)
-const wallMat = mat(0x111122, 0x001133, 0.5);
-box(80,6,1, 0,3,-40, wallMat); box(80,6,1, 0,3,40, wallMat);
-box(1,6,80, -40,3,0, wallMat); box(1,6,80, 40,3,0, wallMat);
-
-// Cover blocks — store dimensions for collision
-const coverDefs = [
-  [4,2,4,  -8,1, 0, mat(0x1a0533,0x6600ff,0.4)],
-  [4,2,4,   8,1, 0, mat(0x1a0533,0x6600ff,0.4)],
-  [2,3,8,   0,1.5,-10, mat(0x330011,0xff3300,0.3)],
-  [2,3,8,   0,1.5, 10, mat(0x330011,0xff3300,0.3)],
-  [8,1.5,2, -12,0.75,-6, mat(0x002233,0x0099ff,0.3)],
-  [8,1.5,2,  12,0.75, 6, mat(0x002233,0x0099ff,0.3)],
-  [3,4,3,  -15,2,-5, mat(0x1a1100,0xff9900,0.4)],
-  [3,4,3,   15,2, 5, mat(0x1a1100,0xff9900,0.4)],
-  [2,2,10,  -5,1,-18, mat(0x0d1a0d,0x00ff66,0.3)],
-  [2,2,10,   5,1, 18, mat(0x0d1a0d,0x00ff66,0.3)],
+// ── Cover blocks + colliders ─────────────────────────────
+const COVER_DEFS = [
+  [4,2,4,  −8,1,  0], [4,2,4,   8,1,  0],
+  [2,3,8,   0,1.5,−10],[2,3,8,   0,1.5,10],
+  [8,1.5,2,−12,0.75,−6],[8,1.5,2,12,0.75,6],
+  [3,4,3, −15,2, −5], [3,4,3,  15,2,  5],
+  [2,2,10, −5,1, −18],[2,2,10,  5,1,  18],
 ];
-// AABB colliders: {minX,maxX,minY,maxY,minZ,maxZ}
+const COVER_COLORS = [
+  [0x2a0844,0x6600ff],[0x2a0844,0x6600ff],
+  [0x440011,0xff3300],[0x440011,0xff3300],
+  [0x003344,0x0099ff],[0x003344,0x0099ff],
+  [0x331a00,0xff9900],[0x331a00,0xff9900],
+  [0x0d2a0d,0x00ff66],[0x0d2a0d,0x00ff66],
+];
 const colliders = [];
-coverDefs.forEach(([w,h,d,x,y,z,m]) => {
-  box(w,h,d,x,y,z,m);
-  colliders.push({
-    minX: x - w/2, maxX: x + w/2,
-    minY: y - h/2, maxY: y + h/2,
-    minZ: z - d/2, maxZ: z + d/2
-  });
+COVER_DEFS.forEach(([w,h,d,x,y,z], i) => {
+  const [col, em] = COVER_COLORS[i];
+  box(w,h,d,x,y,z, mat(col, em, 0.5));
+  colliders.push({ minX:x−w/2,maxX:x+w/2, minY:y−h/2,maxY:y+h/2, minZ:z−d/2,maxZ:z+d/2, w,h,d,x,y,z });
 });
 
-// Logo on walls
-const logoURL = 'https://aws-origin.image-tech-storage.com/tenants/playojo/playojo.com/_nuxt/logo_en.BG7Z5U3Q.png';
-const logoTex = new THREE.TextureLoader().load(logoURL);
-logoTex.colorSpace = THREE.SRGBColorSpace;
-const logoMat = new THREE.MeshBasicMaterial({ map: logoTex, transparent: true, depthWrite: false });
+// ── Wall logos & text ────────────────────────────────────
+const loader = new THREE.TextureLoader();
 
-function addLogo(w, h, x, y, z, rotY) {
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), logoMat.clone());
-  mesh.position.set(x, y, z);
-  mesh.rotation.y = rotY;
+function addLogoPlane(url, w, h, x, y, z, rotY) {
+  loader.load(url, tex => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const m = new THREE.MeshBasicMaterial({ map:tex, transparent:true, depthWrite:false });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w,h), m);
+    mesh.position.set(x,y,z); mesh.rotation.y = rotY;
+    scene.add(mesh);
+  });
+}
+
+// PlayOJO logo — all 4 walls
+addLogoPlane('https://aws-origin.image-tech-storage.com/tenants/playojo/playojo.com/_nuxt/logo_en.BG7Z5U3Q.png',
+  10,5, 0,4.5,−39.3, 0);
+addLogoPlane('https://aws-origin.image-tech-storage.com/tenants/playojo/playojo.com/_nuxt/logo_en.BG7Z5U3Q.png',
+  10,5, 0,4.5,39.3, Math.PI);
+
+// PlayUZU logo — east & west walls
+addLogoPlane('https://aws-origin.image-tech-storage.com/tenants/playuzu/playuzu.com/_nuxt/logo.C7q6Stlx.png',
+  10,5, 39.3,4.5,0, −Math.PI/2);
+addLogoPlane('https://aws-origin.image-tech-storage.com/tenants/playuzu/playuzu.com/_nuxt/logo.C7q6Stlx.png',
+  10,5, −39.3,4.5,0, Math.PI/2);
+
+// "PPC team game" text canvas texture — on all 4 walls below logos
+function makeTextTex(text) {
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = 'transparent';
+  ctx.clearRect(0,0,512,128);
+  ctx.font = 'bold 72px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#ff6600';
+  ctx.shadowColor = '#ff9900';
+  ctx.shadowBlur = 20;
+  ctx.fillText(text, 256, 64);
+  const tex = new THREE.CanvasTexture(c);
+  return tex;
+}
+const textTex = makeTextTex('PPC TEAM GAME');
+function addText(x,y,z,rotY) {
+  const m = new THREE.MeshBasicMaterial({ map:textTex, transparent:true, depthWrite:false });
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(12,3), m);
+  mesh.position.set(x,y,z); mesh.rotation.y = rotY;
   scene.add(mesh);
 }
-// North wall (facing south)
-addLogo(8, 4, 0, 3.5, -39.4, 0);
-// South wall (facing north)
-addLogo(8, 4, 0, 3.5,  39.4, Math.PI);
-// East wall (facing west)
-addLogo(8, 4,  39.4, 3.5, 0, -Math.PI / 2);
-// West wall (facing east)
-addLogo(8, 4, -39.4, 3.5, 0,  Math.PI / 2);
+addText(0,1.8,−39.2, 0);
+addText(0,1.8, 39.2, Math.PI);
+addText( 39.2,1.8,0, −Math.PI/2);
+addText(−39.2,1.8,0,  Math.PI/2);
 
-// Neon trim lines on walls
-function neonLine(x1,y1,z1,x2,y2,z2,color) {
-  const pts = [new THREE.Vector3(x1,y1,z1), new THREE.Vector3(x2,y2,z2)];
-  const geo = new THREE.BufferGeometry().setFromPoints(pts);
-  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({color}));
-  scene.add(line);
+// Neon corner lines
+[[−39,0,−39,−39,7,−39],[39,0,−39,39,7,−39],[−39,0,39,−39,7,39],[39,0,39,39,7,39]]
+  .forEach(([x1,y1,z1,x2,y2,z2]) => {
+    const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x1,y1,z1),new THREE.Vector3(x2,y2,z2)]);
+    scene.add(new THREE.Line(g, new THREE.LineBasicMaterial({color:0xff6600})));
+  });
+
+// ── Laser beam pool ──────────────────────────────────────
+const lasers = [];
+function spawnLaser(ox,oy,oz, dx,dy,dz, color=0xff4400) {
+  const len = 4;
+  const g = new THREE.CylinderGeometry(0.03,0.03,len,6);
+  g.applyMatrix4(new THREE.Matrix4().makeTranslation(0,len/2,0));
+  g.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI/2));
+  const m = new THREE.MeshBasicMaterial({ color });
+  const mesh = new THREE.Mesh(g, m);
+  mesh.position.set(ox,oy,oz);
+  mesh.lookAt(ox+dx, oy+dy, oz+dz);
+  scene.add(mesh);
+  lasers.push({ mesh, dx,dy,dz, life:0.25 });
+
+  // Muzzle flash
+  const flash = new THREE.PointLight(color, 3, 5);
+  flash.position.set(ox,oy,oz); scene.add(flash);
+  setTimeout(()=>scene.remove(flash), 80);
 }
-[[-39,0,-39,-39,5,-39],[39,0,-39,39,5,-39],[-39,0,39,-39,5,39],[39,0,39,39,5,39]]
-  .forEach(([x1,y1,z1,x2,y2,z2]) => neonLine(x1,y1,z1,x2,y2,z2,0xff6600));
 
 // ── Player meshes ────────────────────────────────────────
 const playerMeshes = {};
-const OJO_COLOR = 0xff6600, STRIKE_COLOR = 0x0066ff;
-
 function createPlayerMesh(team) {
   const g = new THREE.Group();
-  const bodyMat = new THREE.MeshStandardMaterial({
-    color: team === 'OJO' ? OJO_COLOR : STRIKE_COLOR,
-    emissive: team === 'OJO' ? 0xff3300 : 0x003399,
-    emissiveIntensity: 0.4
-  });
-  // Body
-  const body = new THREE.Mesh(new THREE.BoxGeometry(0.6,1,0.4), bodyMat);
-  body.position.y = 0.5;
-  g.add(body);
-  // Head
+  const c = team==='OJO' ? 0xff6600 : 0x0066ff;
+  const em = team==='OJO' ? 0xff3300 : 0x0033bb;
+  const bMat = new THREE.MeshStandardMaterial({ color:c, emissive:em, emissiveIntensity:0.5 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.6,1,0.4), bMat);
+  body.position.y=0.5; g.add(body);
   const head = new THREE.Mesh(new THREE.BoxGeometry(0.45,0.45,0.45),
-    new THREE.MeshStandardMaterial({ color: 0xffcc99 }));
-  head.position.y = 1.25;
-  g.add(head);
-  // Gun
+    new THREE.MeshStandardMaterial({color:0xffcc99}));
+  head.position.y=1.25; g.add(head);
   const gun = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.6),
-    new THREE.MeshStandardMaterial({ color: 0x222222, emissive:0x444444, emissiveIntensity:0.3 }));
-  gun.position.set(0.35, 1, -0.4);
-  g.add(gun);
-  scene.add(g);
-  return g;
+    new THREE.MeshStandardMaterial({color:0x333333,emissive:0x555555,emissiveIntensity:0.4}));
+  gun.position.set(0.35,1,−0.4); g.add(gun);
+  scene.add(g); return g;
 }
 
-// ── Collision helpers ────────────────────────────────────
-const PLAYER_R = 0.35;
-const PLAYER_H = 1.8;
+// ── Collision ────────────────────────────────────────────
+const PLAYER_R = 0.35, PLAYER_H = 1.8;
 
-// Check if a point (x, y, z) where y is camera height overlaps a collider
-function overlapsCollider(x, y, z, c) {
-  const feetY = y - PLAYER_H;
-  return (
-    x + PLAYER_R > c.minX && x - PLAYER_R < c.maxX &&
-    feetY        < c.maxY && feetY + PLAYER_H > c.minY &&
-    z + PLAYER_R > c.minZ && z - PLAYER_R < c.maxZ
-  );
+function overlaps(x,y,z,c) {
+  const fy = y − PLAYER_H;
+  return x+PLAYER_R>c.minX && x−PLAYER_R<c.maxX &&
+         fy<c.maxY && fy+PLAYER_H>c.minY &&
+         z+PLAYER_R>c.minZ && z−PLAYER_R<c.maxZ;
+}
+function moveWithCollision(pos,dx,dy,dz) {
+  if (!colliders.some(c=>overlaps(pos.x+dx,pos.y,pos.z,c))) pos.x+=dx; else velocity.x=0;
+  if (!colliders.some(c=>overlaps(pos.x,pos.y,pos.z+dz,c))) pos.z+=dz; else velocity.z=0;
+  if (!colliders.some(c=>overlaps(pos.x,pos.y+dy,pos.z,c))) pos.y+=dy;
+  else { if(velocity.y<0)onGround=true; velocity.y=0; }
 }
 
-// Move with per-axis collision — prevents sticking
-function moveWithCollision(pos, dx, dy, dz) {
-  // Try X
-  const nx = pos.x + dx;
-  const colX = colliders.some(c => overlapsCollider(nx, pos.y, pos.z, c));
-  if (!colX) pos.x = nx;
-  else velocity.x = 0;
-
-  // Try Z
-  const nz = pos.z + dz;
-  const colZ = colliders.some(c => overlapsCollider(pos.x, pos.y, nz, c));
-  if (!colZ) pos.z = nz;
-  else velocity.z = 0;
-
-  // Try Y (gravity / jumping)
-  const ny = pos.y + dy;
-  const colY = colliders.some(c => overlapsCollider(pos.x, ny, pos.z, c));
-  if (!colY) pos.y = ny;
-  else {
-    if (velocity.y < 0) onGround = true;
-    velocity.y = 0;
-  }
-}
-const keys = {};
-let pitch = 0, yaw = 0;
-let pointerLocked = false;
-let myId = null, myTeam = null, alive = true;
-let health = 100;
-let shooting = false, lastShotClient = 0;
-let currentWeapon = 'rifle';
-const weaponFireRate = { rifle:150, pistol:400, sniper:1200 };
-const weaponNames = { rifle:'PLASMA RIFLE', pistol:'ION PISTOL', sniper:'VOID SNIPER' };
-let velocity = { x:0, y:0, z:0 };
-let onGround = true;
-const GRAVITY = -20, JUMP = 8, MOVE_SPEED = 8, SPRINT_SPEED = 13;
-
-document.addEventListener('keydown', e => {
-  keys[e.code] = true;
-  if (e.code === 'KeyR') socket.emit('reload');
-  if (e.code === 'Digit1') switchWeapon('rifle');
-  if (e.code === 'Digit2') switchWeapon('pistol');
-  if (e.code === 'Digit3') switchWeapon('sniper');
-  if (e.code === 'Tab') { e.preventDefault(); showScoreboard(true); }
-  if (e.code === 'Space' && onGround && alive) { velocity.y = JUMP; onGround = false; }
-});
-document.addEventListener('keyup', e => {
-  keys[e.code] = false;
-  if (e.code === 'Tab') showScoreboard(false);
-});
-
-// Pointer lock — click anywhere on the prompt or canvas to lock
-function requestLock() {
-  if (!myId) return;
-  const req = canvas.requestPointerLock();
-  if (req && typeof req.catch === 'function') req.catch(() => {});
-}
-canvas.addEventListener('click', requestLock);
-document.getElementById('pointer-prompt').addEventListener('click', requestLock);
-
-document.addEventListener('pointerlockchange', () => {
-  pointerLocked = document.pointerLockElement === canvas;
-  document.getElementById('pointer-prompt').style.display = pointerLocked ? 'none' : (myId && alive ? 'flex' : 'none');
-});
-document.addEventListener('pointerlockerror', () => {
-  // Retry after short delay (browser sometimes blocks immediate re-lock)
-  setTimeout(requestLock, 500);
-});
-document.addEventListener('mousemove', e => {
-  if (!pointerLocked || !alive) return;
-  yaw   -= e.movementX * 0.002;
-  pitch -= e.movementY * 0.002;
-  pitch = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, pitch));
-});
-document.addEventListener('mousedown', e => { if (e.button === 0) shooting = true; });
-document.addEventListener('mouseup',   e => { if (e.button === 0) shooting = false; });
-
-// Weapon bar buttons
-document.querySelectorAll('.wbtn').forEach(btn => {
-  btn.addEventListener('click', () => switchWeapon(btn.dataset.w));
-});
-
-function switchWeapon(w) {
-  currentWeapon = w;
-  socket.emit('switchWeapon', { weapon: w });
-  document.querySelectorAll('.wbtn').forEach(b => b.classList.toggle('active', b.dataset.w === w));
-  document.getElementById('weaponName').textContent = weaponNames[w];
+// ── Ray-box intersection (slab method) ───────────────────
+function rayHitsBox(ox,oy,oz, dx,dy,dz, c) {
+  const safe = v => Math.abs(v)<1e−8 ? 1e−8 : v;
+  const tx1=(c.minX−PLAYER_R−ox)/safe(dx), tx2=(c.maxX+PLAYER_R−ox)/safe(dx);
+  const ty1=(c.minY−oy)/safe(dy),           ty2=(c.maxY−oy)/safe(dy);
+  const tz1=(c.minZ−PLAYER_R−oz)/safe(dz), tz2=(c.maxZ+PLAYER_R−oz)/safe(dz);
+  const tmin=Math.max(Math.min(tx1,tx2),Math.min(ty1,ty2),Math.min(tz1,tz2));
+  const tmax=Math.min(Math.max(tx1,tx2),Math.max(ty1,ty2),Math.max(tz1,tz2));
+  return tmax>=0 && tmin<=tmax ? Math.max(0,tmin) : Infinity;
 }
 
-// ── Game state ───────────────────────────────────────────
-let remotePlayers = {};
-let inGame = false;
+// ── Input ────────────────────────────────────────────────
+const keys={};
+let pitch=0, yaw=0, pointerLocked=false;
+let myId=null, myTeam=null, alive=true, health=100;
+let shooting=false, lastShotClient=0, currentWeapon='rifle';
+const weaponFireRate={rifle:150,pistol:400,sniper:1200};
+const weaponColors={rifle:0xff4400,pistol:0x44aaff,sniper:0x00ffaa};
+const weaponNames={rifle:'PLASMA RIFLE',pistol:'ION PISTOL',sniper:'VOID SNIPER'};
+let velocity={x:0,y:0,z:0}, onGround=true;
+const GRAVITY=−20, JUMP=8, MOVE_SPEED=8, SPRINT=13;
+let remotePlayers={}, inGame=false;
+
+document.addEventListener('keydown', e=>{
+  keys[e.code]=true;
+  if(e.code==='KeyR') socket.emit('reload');
+  if(e.code==='Digit1') switchWeapon('rifle');
+  if(e.code==='Digit2') switchWeapon('pistol');
+  if(e.code==='Digit3') switchWeapon('sniper');
+  if(e.code==='Tab'){e.preventDefault();showScoreboard(true);}
+  if(e.code==='Space'&&onGround&&alive){velocity.y=JUMP;onGround=false;}
+});
+document.addEventListener('keyup', e=>{
+  keys[e.code]=false;
+  if(e.code==='Tab') showScoreboard(false);
+});
+
+function requestLock(){if(!myId)return;const r=canvas.requestPointerLock();if(r&&r.catch)r.catch(()=>{});}
+canvas.addEventListener('click',requestLock);
+document.getElementById('pointer-prompt').addEventListener('click',requestLock);
+document.addEventListener('pointerlockchange',()=>{
+  pointerLocked=document.pointerLockElement===canvas;
+  if(myId&&alive) document.getElementById('pointer-prompt').style.display=pointerLocked?'none':'flex';
+});
+document.addEventListener('pointerlockerror',()=>setTimeout(requestLock,500));
+document.addEventListener('mousemove',e=>{
+  if(!pointerLocked||!alive)return;
+  yaw−=e.movementX*.002; pitch−=e.movementY*.002;
+  pitch=Math.max(−Math.PI/2.5,Math.min(Math.PI/2.5,pitch));
+});
+document.addEventListener('mousedown',e=>{if(e.button===0)shooting=true;});
+document.addEventListener('mouseup',  e=>{if(e.button===0)shooting=false;});
+document.querySelectorAll('.wbtn').forEach(b=>b.addEventListener('click',()=>switchWeapon(b.dataset.w)));
+
+function switchWeapon(w){
+  currentWeapon=w;
+  socket.emit('switchWeapon',{weapon:w});
+  document.querySelectorAll('.wbtn').forEach(b=>b.classList.toggle('active',b.dataset.w===w));
+  document.getElementById('weaponName').textContent=weaponNames[w];
+}
 
 // ── Socket events ────────────────────────────────────────
-socket.on('joined', data => {
-  myId = data.id; myTeam = data.player.team;
-  cam.position.set(data.player.x, data.player.y + 0.7, data.player.z);
-  inGame = true;
-  document.getElementById('lobby').style.display = 'none';
-  document.getElementById('hud').style.display = 'block';
-  document.getElementById('pointer-prompt').style.display = 'flex';
-  const badge = document.getElementById('teamBadge');
-  badge.textContent = `TEAM ${myTeam}`;
-  badge.className = `team-${myTeam}`;
-  if (data.roundActive) updateTimer(data.roundTimer);
+socket.on('joined',data=>{
+  myId=data.id; myTeam=data.player.team;
+  cam.position.set(data.player.x,data.player.y+1.7,data.player.z);
+  document.getElementById('ammoMain').textContent=data.player.ammo;
+  document.getElementById('ammoReserve').textContent=`/ ${data.player.reserve}`;
+  inGame=true;
+  document.getElementById('lobby').style.display='none';
+  document.getElementById('hud').style.display='block';
+  document.getElementById('pointer-prompt').style.display='flex';
+  const badge=document.getElementById('teamBadge');
+  badge.textContent=`TEAM ${myTeam}`; badge.className=`team-${myTeam}`;
+  if(data.roundActive) updateTimer(data.roundTimer);
 });
 
-socket.on('playerList', players => {
-  remotePlayers = players;
-  // Add/remove meshes
-  Object.entries(players).forEach(([id, p]) => {
-    if (id === myId) return;
-    if (!playerMeshes[id]) playerMeshes[id] = createPlayerMesh(p.team);
-    playerMeshes[id].position.set(p.x, p.y, p.z);
-    playerMeshes[id].visible = p.alive;
+socket.on('playerList',players=>{
+  remotePlayers=players;
+  Object.entries(players).forEach(([id,p])=>{
+    if(id===myId)return;
+    if(!playerMeshes[id]) playerMeshes[id]=createPlayerMesh(p.team);
+    playerMeshes[id].position.set(p.x,p.y,p.z);
+    playerMeshes[id].visible=p.alive;
   });
-  Object.keys(playerMeshes).forEach(id => {
-    if (!players[id]) { scene.remove(playerMeshes[id]); delete playerMeshes[id]; }
+  Object.keys(playerMeshes).forEach(id=>{
+    if(!players[id]){scene.remove(playerMeshes[id]);delete playerMeshes[id];}
   });
 });
 
-socket.on('playerMoved', ({ id, x, y, z, rotY }) => {
-  if (id === myId) return;
-  if (!playerMeshes[id]) return;
-  playerMeshes[id].position.set(x, y, z);
-  playerMeshes[id].rotation.y = rotY;
-  if (remotePlayers[id]) { remotePlayers[id].x=x; remotePlayers[id].y=y; remotePlayers[id].z=z; }
+socket.on('playerMoved',({id,x,y,z,rotY})=>{
+  if(id===myId||!playerMeshes[id])return;
+  playerMeshes[id].position.set(x,y,z);
+  playerMeshes[id].rotation.y=rotY;
+  if(remotePlayers[id]){remotePlayers[id].x=x;remotePlayers[id].y=y;remotePlayers[id].z=z;}
 });
 
-socket.on('playerHit', ({ id, health: hp }) => {
-  if (id === myId) { setHealth(hp); }
-  if (remotePlayers[id]) remotePlayers[id].health = hp;
+// Show laser from OTHER players shooting
+socket.on('playerShot',({id,x,y,z,dx,dy,dz,team})=>{
+  if(id===myId)return;
+  const col=team==='OJO'?0xff4400:0x4488ff;
+  spawnLaser(x,y+0.8,z,dx,dy,dz,col);
 });
 
-socket.on('playerKilled', ({ id, killerName, victimName, killFeed }) => {
-  if (id === myId) showDeath();
-  if (playerMeshes[id]) playerMeshes[id].visible = false;
+socket.on('playerHit',({id,health:hp})=>{
+  if(id===myId) setHealth(hp);
+  if(remotePlayers[id]) remotePlayers[id].health=hp;
+  // hit marker for enemy hits
+  const hm=document.getElementById('hitMarker');
+  hm.style.opacity='1'; setTimeout(()=>hm.style.opacity='0',150);
+});
+
+socket.on('playerKilled',({id,killerName,victimName,killFeed})=>{
+  if(id===myId) showDeath();
+  if(playerMeshes[id]) playerMeshes[id].visible=false;
   renderKillFeed(killFeed);
 });
 
-socket.on('playerRespawned', ({ id, x, y, z }) => {
-  if (id === myId) {
-    alive = true;
-    cam.position.set(x, y + 1.7, z);
-    setHealth(100);
-    hideDeath();
+socket.on('playerRespawned',({id,x,y,z})=>{
+  if(id===myId){
+    alive=true; cam.position.set(x,y+1.7,z); setHealth(100); hideDeath();
+    document.getElementById('pointer-prompt').style.display='flex';
   }
-  if (playerMeshes[id]) { playerMeshes[id].position.set(x,y,z); playerMeshes[id].visible = true; }
+  if(playerMeshes[id]){playerMeshes[id].position.set(x,y,z);playerMeshes[id].visible=true;}
 });
 
-socket.on('roundStart', ({ players, scores }) => {
+socket.on('roundStart',({players,scores})=>{updateScores(scores);remotePlayers=players;});
+socket.on('roundEnd',({winner,scores})=>{
   updateScores(scores);
-  remotePlayers = players;
+  showRoundMsg(winner==='draw'?'ROUND DRAW':`TEAM ${winner} WINS THE ROUND`);
 });
-
-socket.on('roundEnd', ({ winner, scores }) => {
-  updateScores(scores);
-  const msg = winner === 'draw' ? 'ROUND DRAW' : `TEAM ${winner} WINS THE ROUND`;
-  showRoundMsg(msg);
+socket.on('matchOver',({winner})=>{
+  const el=document.getElementById('matchOver');
+  const r=document.getElementById('matchResult');
+  r.textContent=winner===myTeam?'🏆 YOUR TEAM WINS!':'💀 DEFEATED';
+  r.style.color=winner===myTeam?'#ff9900':'#ff3300';
+  el.style.display='flex'; setTimeout(()=>el.style.display='none',8000);
 });
-
-socket.on('matchOver', ({ winner, scores }) => {
-  const el = document.getElementById('matchOver');
-  const res = document.getElementById('matchResult');
-  res.textContent = winner === myTeam ? '🏆 YOUR TEAM WINS!' : '💀 DEFEATED';
-  res.style.color = winner === myTeam ? '#ff9900' : '#ff3300';
-  el.style.display = 'flex';
-  setTimeout(() => el.style.display = 'none', 8000);
+socket.on('timerUpdate',updateTimer);
+socket.on('ammoUpdate',({ammo,reserve})=>{
+  document.getElementById('ammoMain').textContent=ammo;
+  document.getElementById('ammoReserve').textContent=`/ ${reserve}`;
 });
-
-socket.on('timerUpdate', updateTimer);
-socket.on('ammoUpdate', ({ ammo, reserve }) => {
-  document.getElementById('ammoMain').textContent = ammo;
-  document.getElementById('ammoReserve').textContent = `/ ${reserve}`;
+socket.on('scoreUpdate',p=>{remotePlayers=p;});
+socket.on('noAmmo',()=>{
+  const el=document.getElementById('weaponName');
+  el.textContent='— RELOAD (R) —';
+  setTimeout(()=>el.textContent=weaponNames[currentWeapon],1500);
 });
-socket.on('scoreUpdate', players => { remotePlayers = players; });
-socket.on('noAmmo', () => { document.getElementById('weaponName').textContent = '— RELOAD (R) —'; setTimeout(()=>document.getElementById('weaponName').textContent=weaponNames[currentWeapon],1500); });
-socket.on('playerShot', ({ id }) => { /* muzzle flash could go here */ });
-socket.on('serverFull', () => alert('Server is full (8 players max). Try again later.'));
+socket.on('serverFull',()=>alert('Server full (8 players max).'));
 
 // ── UI helpers ───────────────────────────────────────────
-function setHealth(hp) {
-  health = Math.max(0, hp);
-  document.getElementById('healthFill').style.width = health + '%';
-  document.getElementById('healthNum').textContent = health;
-  const h = Math.max(0, Math.min(1, health/100));
-  document.getElementById('healthFill').style.background =
+function setHealth(hp){
+  health=Math.max(0,hp);
+  document.getElementById('healthFill').style.width=health+'%';
+  document.getElementById('healthNum').textContent=health;
+  const h=health/100;
+  document.getElementById('healthFill').style.background=
     `linear-gradient(90deg,hsl(${h*30},100%,40%),hsl(${h*30+10},100%,50%))`;
 }
-
-function showDeath() {
-  alive = false;
-  document.getElementById('deathScreen').style.display = 'flex';
-  let t = 5;
-  const iv = setInterval(() => {
-    document.getElementById('respawnTimer').textContent = `Respawning in ${--t}...`;
-    if (t <= 0) clearInterval(iv);
-  }, 1000);
+function showDeath(){
+  alive=false;
+  document.getElementById('deathScreen').style.display='flex';
+  let t=5;
+  const iv=setInterval(()=>{
+    document.getElementById('respawnTimer').textContent=`Respawning in ${−−t}...`;
+    if(t<=0)clearInterval(iv);
+  },1000);
 }
-function hideDeath() { document.getElementById('deathScreen').style.display = 'none'; }
-
-function updateTimer(sec) {
-  const m = Math.floor(sec/60), s = sec%60;
-  document.getElementById('timerBox').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+function hideDeath(){document.getElementById('deathScreen').style.display='none';}
+function updateTimer(sec){
+  const m=Math.floor(sec/60),s=sec%60;
+  document.getElementById('timerBox').textContent=`${m}:${s.toString().padStart(2,'0')}`;
 }
-
-function updateScores(sc) {
-  document.getElementById('sOJO').textContent = sc.OJO;
-  document.getElementById('sSTRIKE').textContent = sc.STRIKE;
+function updateScores(sc){
+  document.getElementById('sOJO').textContent=sc.OJO;
+  document.getElementById('sSTRIKE').textContent=sc.STRIKE;
 }
-
-function renderKillFeed(kf) {
-  const el = document.getElementById('killfeed');
-  el.innerHTML = kf.slice(0,5).map(k =>
+function renderKillFeed(kf){
+  document.getElementById('killfeed').innerHTML=kf.slice(0,5).map(k=>
     `<div class="kf-entry"><span class="kf-killer">${k.killer}</span><span class="kf-gun"> [${k.weapon}] </span><span class="kf-victim">${k.victim}</span></div>`
   ).join('');
 }
-
-function showScoreboard(show) {
-  const sb = document.getElementById('scoreboard');
-  if (show) {
+function showScoreboard(show){
+  const sb=document.getElementById('scoreboard');
+  if(show){
     sb.classList.add('show');
-    const tbody = document.getElementById('sbBody');
-    const sorted = Object.values(remotePlayers).sort((a,b) => b.kills - a.kills);
-    tbody.innerHTML = sorted.map(p => {
-      const kd = p.deaths ? (p.kills/p.deaths).toFixed(2) : p.kills.toFixed(2);
+    const sorted=Object.values(remotePlayers).sort((a,b)=>b.kills−a.kills);
+    document.getElementById('sbBody').innerHTML=sorted.map(p=>{
+      const kd=p.deaths?(p.kills/p.deaths).toFixed(2):p.kills.toFixed(2);
       return `<tr class="sb-${p.team.toLowerCase()}">
         <td>${p.name}${p.id===myId?' ★':''}</td>
-        <td>${p.team}</td><td>${p.kills}</td><td>${p.deaths}</td><td>${kd}</td>
-      </tr>`;
+        <td>${p.team}</td><td>${p.kills}</td><td>${p.deaths}</td><td>${kd}</td></tr>`;
     }).join('');
   } else sb.classList.remove('show');
 }
-
-let roundMsgTimeout;
-function showRoundMsg(msg) {
-  const el = document.createElement('div');
-  el.style.cssText='position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);font-size:2rem;font-weight:900;color:#ff9900;text-shadow:0 0 20px #ff660088;z-index:40;pointer-events:none;letter-spacing:4px';
-  el.textContent = msg; document.body.appendChild(el);
-  setTimeout(() => el.remove(), 3000);
+function showRoundMsg(msg){
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);font-size:2rem;font-weight:900;color:#ff9900;text-shadow:0 0 20px #ff660099;z-index:40;pointer-events:none;letter-spacing:4px';
+  el.textContent=msg; document.body.appendChild(el);
+  setTimeout(()=>el.remove(),3000);
 }
 
-// Hit marker flash
-socket.on('playerHit', ({ id }) => {
-  if (remotePlayers[id] && remotePlayers[id].team !== myTeam) {
-    const hm = document.getElementById('hitMarker');
-    hm.style.opacity = '1';
-    setTimeout(() => hm.style.opacity = '0', 150);
-  }
-});
+// ── Game loop ────────────────────────────────────────────
+const clock=new THREE.Clock();
+const euler=new THREE.Euler(0,0,0,'YXZ');
+let sendMoveTimer=0;
 
-// ── Movement & shooting loop ─────────────────────────────
-const clock = new THREE.Clock();
-const moveDir = new THREE.Vector3();
-const euler = new THREE.Euler(0, 0, 0, 'YXZ');
-
-function getShootDir() {
-  euler.set(pitch, yaw, 0);
-  const dir = new THREE.Vector3(0, 0, -1).applyEuler(euler).normalize();
-  return dir;
+function getShootDir(){
+  euler.set(pitch,yaw,0);
+  return new THREE.Vector3(0,0,−1).applyEuler(euler).normalize();
 }
 
-let sendMoveTimer = 0;
-
-function update(dt) {
-  if (!inGame || !alive) return;
-
-  // Apply gravity
-  velocity.y += GRAVITY * dt;
-
-  // Horizontal movement
-  const speed = keys['ShiftLeft'] || keys['ShiftRight'] ? SPRINT_SPEED : MOVE_SPEED;
-  const fw = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
-  const rt = new THREE.Vector3(Math.cos(yaw),  0, -Math.sin(yaw));
-  moveDir.set(0, 0, 0);
-  if (keys['KeyW']) moveDir.add(fw);
-  if (keys['KeyS']) moveDir.sub(fw);
-  if (keys['KeyA']) moveDir.sub(rt);
-  if (keys['KeyD']) moveDir.add(rt);
-  if (moveDir.lengthSq() > 0) moveDir.normalize();
-  velocity.x = moveDir.x * speed;
-  velocity.z = moveDir.z * speed;
-
-  // Move with per-axis collision
-  moveWithCollision(cam.position, velocity.x * dt, velocity.y * dt, velocity.z * dt);
-
-  // Floor clamp
-  if (cam.position.y < 1.7) { cam.position.y = 1.7; velocity.y = 0; onGround = true; }
-
-  // Arena boundary
-  cam.position.x = Math.max(-39, Math.min(39, cam.position.x));
-  cam.position.z = Math.max(-39, Math.min(39, cam.position.z));
-
-  // Camera rotation
-  euler.set(pitch, yaw, 0);
-  cam.quaternion.setFromEuler(euler);
-
-  // Emit position
-  sendMoveTimer += dt;
-  if (sendMoveTimer > 0.05) {
-    sendMoveTimer = 0;
-    socket.emit('move', {
-      x: cam.position.x, y: cam.position.y - 1.7,
-      z: cam.position.z, rotY: yaw
-    });
+function update(dt){
+  // Update lasers
+  for(let i=lasers.length−1;i>=0;i−−){
+    const l=lasers[i];
+    l.life−=dt;
+    l.mesh.position.x+=l.dx*20*dt;
+    l.mesh.position.y+=l.dy*20*dt;
+    l.mesh.position.z+=l.dz*20*dt;
+    if(l.life<=0){scene.remove(l.mesh);lasers.splice(i,1);}
   }
 
-  // Shoot — handle auto (rifle) and semi-auto (pistol/sniper)
-  if (pointerLocked && alive) {
-    const now = Date.now();
-    if (shooting && now - lastShotClient >= weaponFireRate[currentWeapon]) {
-      lastShotClient = now;
-      const dir = getShootDir();
-      socket.emit('shoot', { dirX: dir.x, dirY: dir.y, dirZ: dir.z });
-      // Semi-auto: require mouse release between shots
-      if (currentWeapon !== 'rifle') shooting = false;
+  if(!inGame||!alive)return;
+
+  // Gravity
+  velocity.y+=GRAVITY*dt;
+
+  // Movement
+  const speed=keys['ShiftLeft']||keys['ShiftRight']?SPRINT:MOVE_SPEED;
+  const fw=new THREE.Vector3(−Math.sin(yaw),0,−Math.cos(yaw));
+  const rt=new THREE.Vector3( Math.cos(yaw),0,−Math.sin(yaw));
+  const md=new THREE.Vector3();
+  if(keys['KeyW'])md.add(fw); if(keys['KeyS'])md.sub(fw);
+  if(keys['KeyA'])md.sub(rt); if(keys['KeyD'])md.add(rt);
+  if(md.lengthSq()>0)md.normalize();
+  velocity.x=md.x*speed; velocity.z=md.z*speed;
+
+  moveWithCollision(cam.position,velocity.x*dt,velocity.y*dt,velocity.z*dt);
+
+  // Floor
+  if(cam.position.y<1.7){cam.position.y=1.7;velocity.y=0;onGround=true;}
+  cam.position.x=Math.max(−39,Math.min(39,cam.position.x));
+  cam.position.z=Math.max(−39,Math.min(39,cam.position.z));
+
+  euler.set(pitch,yaw,0); cam.quaternion.setFromEuler(euler);
+
+  // Send position
+  sendMoveTimer+=dt;
+  if(sendMoveTimer>0.05){
+    sendMoveTimer=0;
+    socket.emit('move',{x:cam.position.x,y:cam.position.y−1.7,z:cam.position.z,rotY:yaw});
+  }
+
+  // Shoot
+  if(pointerLocked&&alive&&shooting){
+    const now=Date.now();
+    if(now−lastShotClient>=weaponFireRate[currentWeapon]){
+      lastShotClient=now;
+      const dir=getShootDir();
+
+      // Client-side box occlusion check
+      const ox=cam.position.x, oy=cam.position.y−0.3, oz=cam.position.z;
+      const boxBlock=Math.min(...colliders.map(c=>rayHitsBox(ox,oy,oz,dir.x,dir.y,dir.z,c)));
+
+      // Check if any enemy is closer than blocking box
+      let blocked=false;
+      Object.values(remotePlayers).forEach(t=>{
+        if(!t.alive||t.team===myTeam)return;
+        const dx=t.x−ox,dy=(t.y+0.8)−oy,dz=t.z−oz;
+        const dot=dx*dir.x+dy*dir.y+dz*dir.z;
+        if(dot>0&&dot<boxBlock){/* would hit — not blocked */}
+        else if(dot>0&&dot>=boxBlock) blocked=true;
+      });
+
+      // Spawn own laser
+      spawnLaser(ox,oy,oz,dir.x,dir.y,dir.z,weaponColors[currentWeapon]);
+
+      socket.emit('shoot',{dirX:dir.x,dirY:dir.y,dirZ:dir.z});
+      if(currentWeapon!=='rifle')shooting=false;
     }
   }
 }
 
-// ── Render loop ──────────────────────────────────────────
-function animate() {
+function animate(){
   requestAnimationFrame(animate);
-  const dt = Math.min(clock.getDelta(), 0.05);
+  const dt=Math.min(clock.getDelta(),0.05);
   update(dt);
-  renderer.render(scene, cam);
+  renderer.render(scene,cam);
 }
 animate();
 
-// ── Join handler ─────────────────────────────────────────
-document.getElementById('joinBtn').addEventListener('click', () => {
-  const name = document.getElementById('nameInput').value.trim() || 'OJO Player';
-  socket.emit('join', { name });
+// ── Join ─────────────────────────────────────────────────
+document.getElementById('joinBtn').addEventListener('click',()=>{
+  const name=document.getElementById('nameInput').value.trim()||'OJO Player';
+  socket.emit('join',{name});
 });
-document.getElementById('nameInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('joinBtn').click();
+document.getElementById('nameInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter')document.getElementById('joinBtn').click();
 });
 </script>
 </body>
