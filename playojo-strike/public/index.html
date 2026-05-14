@@ -456,14 +456,16 @@ const TXT=makeTex('PPC TEAM GAME');
 // ─────────────────────────────────────────────
 const lasers=[];
 function spawnLaser(ox,oy,oz,dx,dy,dz,col){
-  const g=new THREE.CylinderGeometry(.03,.03,5,5);
-  g.applyMatrix4(new THREE.Matrix4().makeTranslation(0,2.5,0));
-  g.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI/2));
-  const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:col}));
-  m.position.set(ox,oy,oz); m.lookAt(ox+dx,oy+dy,oz+dz); scene.add(m);
-  const fl=new THREE.PointLight(col,4,5); fl.position.set(ox,oy,oz); scene.add(fl);
-  setTimeout(()=>scene.remove(fl),70);
-  lasers.push({m,dx,dy,dz,life:.22});
+  const points=[new THREE.Vector3(0,0,0),new THREE.Vector3(dx*6,dy*6,dz*6)];
+  const geo=new THREE.BufferGeometry().setFromPoints(points);
+  const mat=new THREE.LineBasicMaterial({color:col,linewidth:3});
+  const line=new THREE.Line(geo,mat);
+  line.position.set(ox,oy,oz);
+  scene.add(line);
+  const fl=new THREE.PointLight(col,5,6);
+  fl.position.set(ox,oy,oz); scene.add(fl);
+  setTimeout(()=>scene.remove(fl),80);
+  lasers.push({m:line,dx,dy,dz,life:.3});
 }
 
 // ─────────────────────────────────────────────
@@ -806,8 +808,11 @@ const fv=new THREE.Vector3(), rv=new THREE.Vector3(), md=new THREE.Vector3();
 function tick(dt){
   // Update lasers
   for(let i=lasers.length-1;i>=0;i--){
-    const l=lasers[i]; l.life-=dt;
-    l.m.position.x+=l.dx*22*dt; l.m.position.y+=l.dy*22*dt; l.m.position.z+=l.dz*22*dt;
+    const l=lasers[i];
+    l.life-=dt;
+    l.m.position.x+=l.dx*22*dt;
+    l.m.position.y+=l.dy*22*dt;
+    l.m.position.z+=l.dz*22*dt;
     if(l.life<=0){scene.remove(l.m);lasers.splice(i,1);}
   }
   if(!inGame||!alive)return;
