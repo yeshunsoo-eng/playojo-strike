@@ -26,16 +26,8 @@ body{background:#111;color:#fff;font-family:'Segoe UI',Arial,sans-serif;overflow
   letter-spacing:2px;text-transform:uppercase}
 #joinBtn:disabled{opacity:.45;cursor:not-allowed}
 
-/* Map selector */
-#map-title{font-size:.65rem;color:#888;letter-spacing:3px;text-transform:uppercase;margin-bottom:.6rem;align-self:flex-start}
-#map-grid{display:flex;gap:10px;margin-bottom:1rem}
-.map-opt{width:90px;height:60px;border-radius:6px;border:2px solid #2a2a2a;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:#111;transition:.15s;gap:4px;padding:4px}
-.map-opt span.ico{font-size:1.3rem;line-height:1}
-.map-opt span.lbl{font-size:.5rem;color:#888;letter-spacing:1px;text-transform:uppercase;text-align:center}
-.map-opt:hover{border-color:#ff9900;transform:scale(1.05)}
-.map-opt.sel{border-color:#ff6600;box-shadow:0 0 10px #ff660055}
+/* Skin selector */
+#skin-title{font-size:.65rem;color:#888;letter-spacing:3px;text-transform:uppercase;margin-bottom:.6rem;align-self:flex-start}
 #skin-grid{display:flex;gap:9px;margin-bottom:1rem;flex-wrap:wrap;justify-content:center}
 .skin-opt{width:52px;height:52px;border-radius:6px;border:2px solid #2a2a2a;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -63,8 +55,6 @@ body{background:#111;color:#fff;font-family:'Segoe UI',Arial,sans-serif;overflow
 #xhair .dot{position:absolute;width:3px;height:3px;background:#00ee77;border-radius:50%;top:-1.5px;left:-1.5px}
 #hitfx{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   color:#ff3333;font-size:1rem;font-weight:900;opacity:0;letter-spacing:2px;pointer-events:none}
-
-/* Red damage flash */
 #dmg-flash{position:fixed;inset:0;pointer-events:none;z-index:18;opacity:0;
   background:rgba(200,0,0,0.45);transition:opacity .15s}
 
@@ -147,11 +137,11 @@ body{background:#111;color:#fff;font-family:'Segoe UI',Arial,sans-serif;overflow
 #scope-overlay.on{display:block}
 #scope-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   width:280px;height:280px;border-radius:50%;border:3px solid #111;
-  box-shadow:0 0 0 9999px rgba(0,0,0,.88);background:transparent}
+  box-shadow:0 0 0 9999px rgba(0,0,0,.88)}
 #scope-h{position:absolute;top:50%;left:0;right:0;height:1px;background:#33ff66;opacity:.7;transform:translateY(-50%)}
 #scope-v{position:absolute;left:50%;top:0;bottom:0;width:1px;background:#33ff66;opacity:.7;transform:translateX(-50%)}
 #scope-dot{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;
-  background:#33ff66;transform:translate(-50%,-50%);opacity:.9}
+  background:#33ff66;transform:translate(-50%,-50%)}
 #scope-label{position:absolute;bottom:28%;left:50%;transform:translateX(-50%);
   font-size:.6rem;color:#33ff66;letter-spacing:3px;opacity:.6}
 
@@ -164,16 +154,10 @@ canvas{display:block;width:100vw;height:100vh}
 <div id="lobby">
   <div id="lobby-left">
     <img src="/logo_ojo.png" alt="PlayOJO">
-    <div class="sub">PPC Free For All</div>
+    <div class="sub">PPC Strike — Office</div>
     <input id="nameInput" placeholder="Enter callsign..." maxlength="16" autocomplete="off">
-
-    <div id="map-title">Choose map</div>
-    <div id="map-grid">
-      <div class="map-opt sel" data-map="arena"><span class="ico">🚀</span><span class="lbl">Neon Arena</span></div>
-      <div class="map-opt"    data-map="office"><span class="ico">🏢</span><span class="lbl">Office</span></div>
-    </div>
-
-    <div id="skin-title">Choose your skin</div>    <div id="skin-grid">
+    <div id="skin-title">Choose your skin</div>
+    <div id="skin-grid">
       <div class="skin-opt sel" data-skin="0"><span class="ico">🟠</span><span class="lbl">Blaze</span></div>
       <div class="skin-opt"    data-skin="1"><span class="ico">🔵</span><span class="lbl">Frost</span></div>
       <div class="skin-opt"    data-skin="2"><span class="ico">🟢</span><span class="lbl">Venom</span></div>
@@ -181,11 +165,9 @@ canvas{display:block;width:100vw;height:100vh}
       <div class="skin-opt"    data-skin="4"><span class="ico">🔴</span><span class="lbl">Inferno</span></div>
       <div class="skin-opt"    data-skin="5"><span class="ico">⚪</span><span class="lbl">Ghost</span></div>
     </div>
-
     <label class="bot-row"><input type="checkbox" id="botsCheck"> INCLUDE BOTS</label>
     <button id="joinBtn">DEPLOY</button>
   </div>
-
   <div id="lobby-right">
     <div id="ctrl-title">⌨ CONTROLS</div>
     <div class="ctrl-grid">
@@ -200,7 +182,7 @@ canvas{display:block;width:100vw;height:100vh}
       <div class="ctrl-row"><span class="ctrl-key">1</span><span class="ctrl-desc">Plasma Rifle</span></div>
       <div class="ctrl-row"><span class="ctrl-key">2</span><span class="ctrl-desc">Ion Pistol</span></div>
       <div class="ctrl-row"><span class="ctrl-key">3</span><span class="ctrl-desc">Void Sniper</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">ESC</span><span class="ctrl-desc">Release Mouse</span></div>
+      <div class="ctrl-key-row"><span class="ctrl-key">ESC</span><span class="ctrl-desc">Release Mouse</span></div>
     </div>
   </div>
 </div>
@@ -210,7 +192,6 @@ canvas{display:block;width:100vw;height:100vh}
   <div id="xhair"><div class="dot"></div></div>
   <div id="hitfx">✕ ✕</div>
   <div id="dmg-flash"></div>
-
   <div id="topbar">
     <div id="scorebar">
       <div class="sb-ojo" id="score-ojo">0</div>
@@ -220,15 +201,12 @@ canvas{display:block;width:100vw;height:100vh}
     <div id="roundlabel">ROUND <span id="round-num">1</span></div>
     <div id="teambadge">—</div>
   </div>
-
   <div id="kfeed"></div>
-
   <div id="bl">
     <div id="hp-num">100</div>
     <div id="hp-bar"><div id="hp-fill"></div></div>
     <div id="armor-row">ARMOR 100</div>
   </div>
-
   <div id="br">
     <div id="slot-label">PRIMARY</div>
     <div id="ammo-row">
@@ -238,7 +216,6 @@ canvas{display:block;width:100vw;height:100vh}
     </div>
     <div id="wep-name">PLASMA RIFLE</div>
   </div>
-
   <div id="wepbar">
     <div class="wbtn on" data-w="rifle">1 RIFLE</div>
     <div class="wbtn"    data-w="pistol">2 PISTOL</div>
@@ -247,13 +224,9 @@ canvas{display:block;width:100vw;height:100vh}
 </div>
 
 <!-- OVERLAYS -->
-<div id="lockprompt">
-  <p>🖱 CLICK TO CAPTURE MOUSE</p>
-  <small>ESC to release</small>
-</div>
+<div id="lockprompt"><p>🖱 CLICK TO CAPTURE MOUSE</p><small>ESC to release</small></div>
 <div id="deathscreen">
-  <h2>ELIMINATED</h2>
-  <p>You were taken down</p>
+  <h2>ELIMINATED</h2><p>You were taken down</p>
   <div id="respawn-timer">Respawning in 5...</div>
 </div>
 <div id="matchover">
@@ -263,25 +236,16 @@ canvas{display:block;width:100vw;height:100vh}
 </div>
 <div id="scoreboard">
   <div id="sb-wrap">
-    <div id="sb-head">
-      <span>SCOREBOARD</span>
-      <span>HOLD TAB TO VIEW</span>
-    </div>
+    <div id="sb-head"><span>SCOREBOARD</span><span>HOLD TAB TO VIEW</span></div>
     <table id="sb-table">
-      <thead><tr>
-        <th>PLAYER</th><th>KILLS</th><th>DEATHS</th><th>K/D</th>
-      </tr></thead>
+      <thead><tr><th>PLAYER</th><th>KILLS</th><th>DEATHS</th><th>K/D</th></tr></thead>
       <tbody id="sb-body"></tbody>
     </table>
   </div>
 </div>
-
-<!-- Scope overlay -->
 <div id="scope-overlay">
   <div id="scope-ring">
-    <div id="scope-h"></div>
-    <div id="scope-v"></div>
-    <div id="scope-dot"></div>
+    <div id="scope-h"></div><div id="scope-v"></div><div id="scope-dot"></div>
   </div>
   <div id="scope-label">VOID SNIPER × 8</div>
 </div>
@@ -291,327 +255,406 @@ canvas{display:block;width:100vw;height:100vh}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-// ─────────────────────────────────────────────
-//  SKINS
-// ─────────────────────────────────────────────
-const SKINS = [
-  { col: 0xff6600, em: 0xff3300, laser: 0xff4400, hex: '#ff6600' }, // Blaze
-  { col: 0x0088ff, em: 0x003399, laser: 0x44aaff, hex: '#0088ff' }, // Frost
-  { col: 0x00cc44, em: 0x006622, laser: 0x00ff66, hex: '#00cc44' }, // Venom
-  { col: 0x9900ff, em: 0x440088, laser: 0xaa44ff, hex: '#9900ff' }, // Phantom
-  { col: 0xff2200, em: 0x880000, laser: 0xff4422, hex: '#ff2200' }, // Inferno
-  { col: 0xcccccc, em: 0x666666, laser: 0xffffff, hex: '#cccccc' }, // Ghost
+// ─── SKINS ───────────────────────────────────
+const SKINS=[
+  {col:0xff6600,em:0xff3300,laser:0xff4400,hex:'#ff6600'},
+  {col:0x0088ff,em:0x003399,laser:0x44aaff,hex:'#0088ff'},
+  {col:0x00cc44,em:0x006622,laser:0x00ff66,hex:'#00cc44'},
+  {col:0x9900ff,em:0x440088,laser:0xaa44ff,hex:'#9900ff'},
+  {col:0xff2200,em:0x880000,laser:0xff4422,hex:'#ff2200'},
+  {col:0xcccccc,em:0x666666,laser:0xffffff,hex:'#cccccc'},
 ];
-let selectedSkin = 0;
-document.querySelectorAll('.skin-opt').forEach(el => {
-  el.addEventListener('click', () => {
-    document.querySelectorAll('.skin-opt').forEach(e => e.classList.remove('sel'));
-    el.classList.add('sel');
-    selectedSkin = parseInt(el.dataset.skin);
+let selectedSkin=0;
+document.querySelectorAll('.skin-opt').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.skin-opt').forEach(e=>e.classList.remove('sel'));
+    el.classList.add('sel'); selectedSkin=parseInt(el.dataset.skin);
   });
 });
 
-// ─────────────────────────────────────────────
-//  SOCKET
-// ─────────────────────────────────────────────
-const socket = io({ autoConnect: true });
+// ─── SOCKET ──────────────────────────────────
+const socket=io({autoConnect:true});
 
-// ─────────────────────────────────────────────
-//  GAME STATE
-// ─────────────────────────────────────────────
-let myId = null, myTeam = null;
-let alive = true, health = 100;
-let inGame = false, pointerLocked = false;
-let shooting = false, lastShot = 0;
-let curWeapon = 'rifle';
-let remotePlayers = {};
-let onGround = true;
-const vel = { x:0, y:0, z:0 };
-let pitch = 0, yaw = 0, sendT = 0;
-let roundNum = 1;
-let scoped = false;
-const NORMAL_FOV = 75, SCOPE_FOV = 15;
+// ─── STATE ───────────────────────────────────
+let myId=null,myTeam=null,alive=true,health=100;
+let inGame=false,pointerLocked=false,shooting=false,lastShot=0;
+let curWeapon='rifle',scoped=false;
+let remotePlayers={},onGround=true;
+const vel={x:0,y:0,z:0};
+let pitch=0,yaw=0,sendT=0,roundNum=1;
+const NORMAL_FOV=75,SCOPE_FOV=15;
+const WRATE={rifle:150,pistol:400,sniper:1200};
+const WLABEL={rifle:'PLASMA RIFLE',pistol:'ION PISTOL',sniper:'VOID SNIPER'};
+const WSLOT={rifle:'PRIMARY',pistol:'SECONDARY',sniper:'SNIPER'};
+const G=-20,JV=8,WK=7,RN=11,PR=0.35,PH=1.8;
 
-const WRATE  = { rifle:150, pistol:400, sniper:1200 };
-const WLABEL = { rifle:'PLASMA RIFLE', pistol:'ION PISTOL', sniper:'VOID SNIPER' };
-const WSLOT  = { rifle:'PRIMARY', pistol:'SECONDARY', sniper:'SNIPER' };
-const G=-20, JV=8, WK=8, RN=13, PR=0.35, PH=1.8;
-
-// ─────────────────────────────────────────────
-//  THREE.JS SETUP
-// ─────────────────────────────────────────────
-const canvas = document.getElementById('c');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
-renderer.shadowMap.enabled = true;
+// ─── RENDERER ────────────────────────────────
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.setSize(innerWidth, innerHeight);
+renderer.setSize(innerWidth,innerHeight);
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x2a2a4a);
-scene.fog = new THREE.Fog(0x2a2a4a, 25, 90);
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xddd8cc);
+scene.fog=new THREE.Fog(0xddd8cc,18,55);
 
-const cam = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 200);
-cam.position.set(0, 1.7, 0);
+const cam=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,150);
+cam.position.set(0,1.7,0);
+window.addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();});
 
-window.addEventListener('resize', () => {
-  renderer.setSize(innerWidth, innerHeight);
-  cam.aspect = innerWidth/innerHeight;
-  cam.updateProjectionMatrix();
+// ─── LIGHTING — office warm fluorescent ──────
+scene.add(new THREE.AmbientLight(0xfff8ee,0.9));
+
+// Main overhead lights in a grid
+for(let x=-20;x<=20;x+=10){
+  for(let z=-20;z<=20;z+=10){
+    const l=new THREE.PointLight(0xfffde8,0.9,18);
+    l.position.set(x,7.6,z); l.castShadow=true; scene.add(l);
+  }
+}
+// Warm fill from windows (south wall)
+const sunLight=new THREE.DirectionalLight(0xfff0cc,0.7);
+sunLight.position.set(15,10,35); sunLight.castShadow=true;
+sunLight.shadow.mapSize.width=2048; sunLight.shadow.mapSize.height=2048;
+scene.add(sunLight);
+
+// ─── HELPERS ─────────────────────────────────
+function sm(col,em=0,ei=0,rough=0.8){
+  return new THREE.MeshStandardMaterial({color:col,emissive:em,emissiveIntensity:ei,roughness:rough,metalness:0});
+}
+function smMetal(col){return new THREE.MeshStandardMaterial({color:col,roughness:0.3,metalness:0.7});}
+const COL=[];
+function box(w,h,d,x,y,z,mat,shadow=true){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+  m.position.set(x,y,z);
+  if(shadow){m.castShadow=true;m.receiveShadow=true;}
+  scene.add(m); return m;
+}
+function col(x,y,z,w,h,d){COL.push({minX:x-w/2,maxX:x+w/2,minY:y-h/2,maxY:y+h/2,minZ:z-d/2,maxZ:z+d/2});}
+
+// ─── OFFICE MAP ───────────────────────────────
+
+// --- Floor: grey carpet tiles with grout lines ---
+const floorM=sm(0x8a8878,0,0,0.95);
+box(80,0.15,80, 0,0,0, floorM);
+// Carpet tile lines
+for(let i=-38;i<=38;i+=2){
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-39,0.08,i),new THREE.Vector3(39,0.08,i)]);
+  scene.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0x777066,transparent:true,opacity:0.35})));
+  const g2=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(i,0.08,-39),new THREE.Vector3(i,0.08,39)]);
+  scene.add(new THREE.Line(g2,new THREE.LineBasicMaterial({color:0x777066,transparent:true,opacity:0.35})));
+}
+
+// --- Ceiling ---
+const ceilM=sm(0xf0ede6,0,0,1.0);
+box(80,0.25,80, 0,8,0, ceilM);
+
+// Ceiling tiles grid lines
+for(let i=-38;i<=38;i+=2){
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-39,7.74,i),new THREE.Vector3(39,7.74,i)]);
+  scene.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0xbbbaaa,transparent:true,opacity:0.5})));
+  const g2=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(i,7.74,-39),new THREE.Vector3(i,7.74,39)]);
+  scene.add(new THREE.Line(g2,new THREE.LineBasicMaterial({color:0xbbbaaa,transparent:true,opacity:0.5})));
+}
+
+// --- Fluorescent light fixtures on ceiling ---
+const lightFixM=sm(0xfffde0,0xfffde0,1.0);
+const lightFrameM=smMetal(0xaaaaaa);
+for(let x=-20;x<=20;x+=10){
+  for(let z=-20;z<=20;z+=10){
+    box(2.4,0.06,0.4, x,7.73,z, lightFrameM);
+    box(2.2,0.04,0.3, x,7.72,z, lightFixM, false);
+  }
+}
+
+// --- Walls: off-white painted drywall ---
+const wallM=sm(0xf2efe8,0,0,0.95);
+// North/South
+box(80,8,0.25, 0,4,-40, wallM);
+box(80,8,0.25, 0,4, 40, wallM);
+// East/West
+box(0.25,8,80, -40,4,0, wallM);
+box(0.25,8,80,  40,4,0, wallM);
+
+// Wall baseboard trim
+const baseM=sm(0xd0ccc4,0,0,0.6);
+[[-40,0.1,0,0.15,0.2,80],[40,0.1,0,0.15,0.2,80],[0,0.1,-40,80,0.2,0.15],[0,0.1,40,80,0.2,0.15]]
+  .forEach(([x,y,z,w,h,d])=>box(w,h,d,x,y,z,baseM));
+
+// Wall crown molding
+const moldM=sm(0xe8e4dc,0,0,0.7);
+[[-40,7.8,0,0.1,0.3,80],[40,7.8,0,0.1,0.3,80],[0,7.8,-40,80,0.3,0.1],[0,7.8,40,80,0.3,0.1]]
+  .forEach(([x,y,z,w,h,d])=>box(w,h,d,x,y,z,moldM));
+
+// --- Windows on south wall (facing in) ---
+const glassMat=new THREE.MeshStandardMaterial({color:0xaad4ee,transparent:true,opacity:0.35,roughness:0,metalness:0.1,side:THREE.DoubleSide});
+const frameM=smMetal(0x888888);
+[[-24,4],[-12,4],[0,4],[12,4],[24,4]].forEach(([x,y])=>{
+  box(4,3,0.08, x,y,39.6, glassMat, false);
+  box(4.3,3.3,0.12, x,y,39.5, frameM, false); // outer frame
+  box(0.1,3,0.12, x,y,39.5, frameM, false);   // mullion
+  box(4.3,0.1,0.12, x,y+0.4,39.5, frameM, false); // transom
+  // Window sill
+  box(4.4,0.1,0.3, x,y-1.35,39.4, sm(0xdddad2), false);
 });
 
-// ─────────────────────────────────────────────
-//  LIGHTING
-// ─────────────────────────────────────────────
-scene.add(new THREE.AmbientLight(0xaaaacc, 1.4));
-const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-sun.position.set(10,30,10); sun.castShadow=true; scene.add(sun);
-const fill = new THREE.DirectionalLight(0xffeedd, 0.5);
-fill.position.set(-10,10,-10); scene.add(fill);
-[[0,5,0,0xff6600],[-15,4,-15,0x0099ff],[15,4,15,0xff0088],[-15,4,15,0x00ffcc],[15,4,-15,0xffcc00]]
-  .forEach(([x,y,z,c])=>{ const l=new THREE.PointLight(c,1.8,30); l.position.set(x,y,z); scene.add(l); });
+// --- Structural pillars ---
+const pillarM=sm(0xe8e4dc,0,0,0.9);
+const pillarAcc=sm(0xc8b89a,0,0,0.8);
+[[-20,-20],[-20,20],[20,-20],[20,20],[0,-20],[0,20],[-20,0],[20,0]].forEach(([x,z])=>{
+  box(1,8,1, x,4,z, pillarM);
+  box(1.15,0.3,1.15, x,0.15,z, pillarAcc); // base
+  box(1.15,0.3,1.15, x,7.85,z, pillarAcc); // cap
+  col(x,4,z, 1.1,8,1.1);
+});
 
-// ─────────────────────────────────────────────
-//  TEXTURE LOADER (shared)
-// ─────────────────────────────────────────────
-const TL = new THREE.TextureLoader();
+// --- Reception desk (north, back of office) ---
+const deskWoodM=sm(0x7a5c2e,0,0,0.6);
+const deskTopM=sm(0x9a7c4e,0,0,0.4);
+box(12,1.1,0.4, 0,0.55,-30, deskWoodM); // front panel
+box(12,0.08,2,  0,1.1,-29.1,deskTopM);  // counter top
+box(5,2,1.8, -3.5,1,-28.2,  deskWoodM); // back section
+box(5,2,1.8,  3.5,1,-28.2,  deskWoodM);
+box(11.5,2,0.08,-0.25,1,-27.3, sm(0x6a4c1e)); // back wall panel
+col(0,0.55,-30, 12,1.1,0.5);
+col(-3.5,1,-28.2, 5,2,2);
+col(3.5,1,-28.2, 5,2,2);
+
+// Computers on reception desk
+[[-5,1.15,-28.9],[-1,1.15,-28.9],[3,1.15,-28.9]].forEach(([x,y,z])=>{
+  box(0.6,0.45,0.04, x,y+0.35,z, sm(0x222222,0x001133,0.2)); // screen
+  box(0.1,0.3,0.1,   x,y+0.15,z+0.1, smMetal(0x444444));    // stand
+  box(0.5,0.03,0.35, x,y,z+0.2, smMetal(0x555555));          // keyboard
+});
+
+// --- Office desk clusters (4 pods of 4 desks) ---
+const podM=sm(0x8c7a60,0,0,0.5);
+const legMat=smMetal(0x666666);
+const monM=sm(0x1a1a1a,0x001122,0.15);
+const kbM=smMetal(0x888888);
+
+function makeDesk(cx,cz,rot){
+  // Desk surface
+  box(1.6,0.05,0.8, cx,0.73,cz, podM);
+  // Legs
+  [[-0.72,0.35,-0.36],[0.72,0.35,-0.36],[-0.72,0.35,0.36],[0.72,0.35,0.36]].forEach(([dx,dy,dz])=>{
+    box(0.06,0.7,0.06, cx+dx,dy,cz+dz, legMat);
+  });
+  // Monitor
+  box(0.03,0.38,0.52, cx,0.73+0.42,cz-0.28, monM);
+  box(0.04,0.04,0.08, cx,0.73+0.04,cz-0.28, legMat);
+  // Keyboard
+  box(0.42,0.02,0.16, cx,0.76,cz+0.05, kbM);
+  // Mouse
+  box(0.07,0.02,0.1, cx+0.28,0.76,cz+0.05, sm(0x333333));
+  // Collider
+  col(cx,0.35,cz, 1.65,0.78,0.85);
+}
+
+// Pod 1 — top-left area
+makeDesk(-12, 8,0); makeDesk(-9, 8,0); makeDesk(-12,11,0); makeDesk(-9,11,0);
+// Pod 2 — top-right area
+makeDesk( 9, 8,0); makeDesk(12, 8,0); makeDesk( 9,11,0); makeDesk(12,11,0);
+// Pod 3 — bottom-left area
+makeDesk(-12,-8,0); makeDesk(-9,-8,0); makeDesk(-12,-11,0); makeDesk(-9,-11,0);
+// Pod 4 — bottom-right area
+makeDesk( 9,-8,0); makeDesk(12,-8,0); makeDesk( 9,-11,0); makeDesk(12,-11,0);
+// Centre row
+makeDesk(-2, 0,0); makeDesk(2, 0,0); makeDesk(-2, 3,0); makeDesk(2, 3,0);
+makeDesk(-2,-3,0); makeDesk(2,-3,0);
+
+// --- Cubicle dividers ---
+const divM=sm(0x8899aa,0,0,0.7);
+const divTopM=sm(0xaabbc0,0,0,0.5);
+function divider(x,y,z,w,h,d){
+  box(w,h,d, x,y,z, divM);
+  box(w+0.04,0.04,d+0.04, x,y+h/2,z, divTopM); // cap strip
+  col(x,y,z,w+0.05,h,d+0.05);
+}
+// Between pods
+divider(-7.2, 0.75, 9.5,  0.08,1.5,5);
+divider(-7.2, 0.75,-9.5,  0.08,1.5,5);
+divider( 7.2, 0.75, 9.5,  0.08,1.5,5);
+divider( 7.2, 0.75,-9.5,  0.08,1.5,5);
+divider(-10.5,0.75, 6.5,  5,1.5,0.08);
+divider(-10.5,0.75,-6.5,  5,1.5,0.08);
+divider( 10.5,0.75, 6.5,  5,1.5,0.08);
+divider( 10.5,0.75,-6.5,  5,1.5,0.08);
+divider( 0,   0.75, 4.8,  5,1.5,0.08);
+divider( 0,   0.75,-4.8,  5,1.5,0.08);
+
+// --- Meeting room (glass walls, north-east corner) ---
+const glassWallM=new THREE.MeshStandardMaterial({color:0xc8e0f0,transparent:true,opacity:0.28,roughness:0,metalness:0.05,side:THREE.DoubleSide});
+const mFrameM=smMetal(0x999999);
+// Glass walls
+box(0.06,3,12, 28,1.5,21,  glassWallM,false);
+box(12,3,0.06, 34,1.5,27,  glassWallM,false);
+box(12,3,0.06, 34,1.5,15,  glassWallM,false);
+// Frames
+[28,1.5,27,0.1,3.1,0.1],[28,1.5,15,0.1,3.1,0.1],[40,1.5,27,0.1,3.1,0.1],[40,1.5,15,0.1,3.1,0.1]
+  .forEach(([x,y,z,w,h,d])=>box(w,h,d,x,y,z,mFrameM));
+box(0.1,3.1,12.1, 28,1.5,21, mFrameM,false);
+// Meeting table
+const mtblGeo=new THREE.CylinderGeometry(2.2,2.2,0.08,24);
+const mtbl=new THREE.Mesh(mtblGeo,sm(0x6b4820,0,0,0.4)); mtbl.position.set(34,0.78,21); scene.add(mtbl);
+mtbl.castShadow=true;
+col(34,0.78,21, 4.5,0.1,4.5);
+// Meeting chairs
+for(let a=0;a<8;a++){
+  const ang=a/8*Math.PI*2, cx=34+Math.cos(ang)*3.1, cz=21+Math.sin(ang)*3.1;
+  box(0.5,0.55,0.5, cx,0.28,cz, sm(0x334455)); // seat
+  box(0.5,0.6,0.06, cx,0.6,cz-0.22, sm(0x2a3a48)); // back
+  col(cx,0.3,cz, 0.55,0.6,0.55);
+}
+// "MEETING ROOM" sign
+const signC=document.createElement('canvas'); signC.width=256; signC.height=64;
+const sctx=signC.getContext('2d');
+sctx.fillStyle='#1a3a5a'; sctx.fillRect(0,0,256,64);
+sctx.font='bold 24px Arial'; sctx.fillStyle='#ffffff'; sctx.textAlign='center'; sctx.textBaseline='middle';
+sctx.fillText('MEETING ROOM',128,32);
+const signTex=new THREE.CanvasTexture(signC);
+const signMesh=new THREE.Mesh(new THREE.PlaneGeometry(1.8,0.45),new THREE.MeshBasicMaterial({map:signTex}));
+signMesh.position.set(28.1,2.6,21); signMesh.rotation.y=Math.PI/2; scene.add(signMesh);
+
+// --- Filing cabinets along walls ---
+const cabM=smMetal(0x8899aa);
+const cabHandleM=smMetal(0xcccccc);
+function fileCabinet(x,z){
+  box(0.8,1.35,0.5, x,0.675,z, cabM);
+  box(0.7,0.28,0.04, x,0.95,z+0.26, sm(0x7a8a9a)); // drawer 1
+  box(0.7,0.28,0.04, x,0.62,z+0.26, sm(0x7a8a9a)); // drawer 2
+  box(0.7,0.28,0.04, x,0.30,z+0.26, sm(0x7a8a9a)); // drawer 3
+  box(0.15,0.04,0.04, x,0.95,z+0.28, cabHandleM);
+  box(0.15,0.04,0.04, x,0.62,z+0.28, cabHandleM);
+  box(0.15,0.04,0.04, x,0.30,z+0.28, cabHandleM);
+  col(x,0.68,z, 0.85,1.4,0.55);
+}
+for(let z=-36;z<=36;z+=3){ fileCabinet(-39.3,z); }
+for(let z=-36;z<=36;z+=6){ fileCabinet(39.3,z); }
+for(let x=-30;x<=-24;x+=3){ fileCabinet(x,-39.3); }
+
+// --- Printer / copier stations ---
+const printM=smMetal(0x666666);
+function printer(x,z){
+  box(0.8,0.9,0.6, x,0.45,z, printM);
+  box(0.75,0.08,0.55, x,0.9,z, sm(0x444444));
+  box(0.6,0.25,0.04, x,0.65,z+0.31, sm(0x1a1a1a,0x002244,0.2));
+  col(x,0.45,z, 0.85,0.95,0.65);
+}
+printer(-25,-25); printer(25,-25); printer(-25,25); printer(25,25);
+
+// --- Kitchen/break area (south-west corner) ---
+// Counter
+box(4,0.9,0.7, -32,0.45,32, sm(0x8c7a60,0,0,0.5));
+box(4.1,0.05,0.75, -32,0.91,32, sm(0xd0ccc4,0,0,0.3));
+col(-32,0.45,32, 4.1,0.95,0.75);
+// Cupboards above counter
+box(3.8,1.2,0.4, -32,2.5,31.8, sm(0x9a8a70));
+// Coffee machine
+box(0.3,0.45,0.25, -30.2,0.95,31.7, smMetal(0x333333));
+box(0.2,0.08,0.2,  -30.2,1.18,31.7, sm(0x1a1a1a,0x330000,0.3));
+// Fridge
+box(0.8,1.8,0.7, -33.8,0.9,31.7, smMetal(0xaaaaaa));
+col(-33.8,0.9,31.7, 0.85,1.85,0.75);
+// Table + stools
+box(1.2,0.04,0.8, -27,0.74,-32, sm(0x6b4820,0,0,0.4));
+box(0.04,0.7,0.04, -27.5,0.35,-32.35, legMat); box(0.04,0.7,0.04, -26.5,0.35,-32.35, legMat);
+box(0.04,0.7,0.04, -27.5,0.35,-31.65, legMat); box(0.04,0.7,0.04, -26.5,0.35,-31.65, legMat);
+col(-27,0.4,-32, 1.25,0.8,0.85);
+[[-27.6,0.3,-33],[-26.4,0.3,-33],[-27.6,0.3,-31],[-26.4,0.3,-31]].forEach(([x,y,z])=>{
+  box(0.35,0.06,0.35, x,y,z, sm(0x446688)); col(x,y,z,0.4,0.35,0.4);
+});
+
+// --- Sofa lounge area ---
+const sofaM=sm(0x445566,0,0,0.9);
+const sofaBackM=sm(0x3a4a5a,0,0,0.9);
+// L-shaped sofa
+box(3,0.5,0.9, 12,0.25,-26, sofaM); // long side
+box(0.9,0.5,3, 10.55,0.25,-27.55, sofaM); // short side
+box(3,0.7,0.15, 12,0.7,-26.5, sofaBackM); // back
+box(0.15,0.7,3, 10.05,0.7,-27.55, sofaBackM); // side back
+box(0.55,0.8,0.9, 13.5,0.4,-26, sofaBackM); // arm
+box(0.55,0.8,0.9, 10.5,0.4,-26, sofaBackM); // arm
+col(12,0.25,-26, 3.1,0.55,0.95);
+col(10.55,0.25,-27.55, 0.95,0.55,3.1);
+// Coffee table
+box(1.4,0.04,0.8, 12,0.45,-24.5, sm(0x8a7040,0,0,0.3));
+box(0.04,0.42,0.04, 11.35,0.21,-24.1, legMat); box(0.04,0.42,0.04, 12.65,0.21,-24.1, legMat);
+box(0.04,0.42,0.04, 11.35,0.21,-24.9, legMat); box(0.04,0.42,0.04, 12.65,0.21,-24.9, legMat);
+
+// --- Water coolers ---
+function waterCooler(x,z){
+  box(0.35,1.1,0.35, x,0.55,z, sm(0xeef4fa,0,0,0.3)); // body
+  box(0.28,0.35,0.28, x,1.1,z, sm(0x3399cc,0,0,0.4)); // bottle
+  box(0.4,0.05,0.4,   x,0.05,z, smMetal(0x777777));   // base
+  col(x,0.55,z, 0.42,1.15,0.42);
+}
+waterCooler(-35,-10); waterCooler(35,10); waterCooler(0,-35);
+
+// --- PlayOJO wall art + branding ---
+const TL=new THREE.TextureLoader();
 function wallPlane(url,w,h,x,y,z,ry){
-  TL.load(url, tex=>{
+  TL.load(url,tex=>{
     tex.colorSpace=THREE.SRGBColorSpace;
     const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),
       new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
     m.position.set(x,y,z); m.rotation.y=ry; scene.add(m);
   });
 }
+wallPlane('/logo_ojo.png', 5,2.5,   0,5,-39.7, 0);
+wallPlane('/logo_owl.jpg', 4,4,  -25,4,-39.7, 0);
+wallPlane('/logo_owl.jpg', 4,4,   25,4,-39.7, 0);
+wallPlane('/logo_ojo.png', 5,2.5, -39.7,5,  0, Math.PI/2);
+wallPlane('/logo_owl.jpg', 4,4,  -39.7,5,-20, Math.PI/2);
+wallPlane('/logo_owl.jpg', 4,4,  -39.7,5, 20, Math.PI/2);
 
-// ─────────────────────────────────────────────
-//  COLLIDERS (filled by map builder)
-// ─────────────────────────────────────────────
-const COL=[];
-function sm(col,em=0,ei=0){ return new THREE.MeshStandardMaterial({color:col,emissive:em,emissiveIntensity:ei,roughness:.7}); }
-function addBox(w,h,d,x,y,z,mat,cast=true){
-  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
-  m.position.set(x,y,z); if(cast){m.castShadow=true;m.receiveShadow=true;} scene.add(m); return m;
-}
+// Whiteboard (north wall, beside reception)
+box(3,2,0.08, -20,3,-39.6, sm(0xf8f8f0,0,0,0.1));
+box(3.1,2.1,0.06, -20,3,-39.65, smMetal(0x888888));
+// Whiteboard text
+const wbC=document.createElement('canvas'); wbC.width=512; wbC.height=256;
+const wbx=wbC.getContext('2d');
+wbx.fillStyle='#f8f8f0'; wbx.fillRect(0,0,512,256);
+wbx.font='bold 48px Arial'; wbx.fillStyle='#1155cc'; wbx.textAlign='center'; wbx.textBaseline='middle';
+wbx.fillText('PPC STRIKE',256,80);
+wbx.font='24px Arial'; wbx.fillStyle='#cc2222';
+wbx.fillText('Free For All — Good Luck!',256,140);
+wbx.font='18px Arial'; wbx.fillStyle='#444444';
+wbx.fillText('May the best PPC team win',256,190);
+const wbTex=new THREE.CanvasTexture(wbC);
+const wbMesh=new THREE.Mesh(new THREE.PlaneGeometry(2.8,1.8),new THREE.MeshBasicMaterial({map:wbTex}));
+wbMesh.position.set(-20,3,-39.55); scene.add(wbMesh);
 
-function buildArena(){
-  scene.background=new THREE.Color(0x2a2a4a);
-  scene.fog=new THREE.Fog(0x2a2a4a,25,90);
-  addBox(80,.2,80,0,0,0,sm(0x1a1a3a));
-  const grid=new THREE.GridHelper(80,40,0xff6600,0x333355); grid.position.y=.11; scene.add(grid);
-  const wm=sm(0x222244,0x000833,.3);
-  addBox(80,8,1,0,4,-40,wm); addBox(80,8,1,0,4,40,wm);
-  addBox(1,8,80,-40,4,0,wm); addBox(1,8,80,40,4,0,wm);
-  const COVER=[
-    [4,2,4,-8,1,0],[4,2,4,8,1,0],
-    [2,3,8,0,1.5,-10],[2,3,8,0,1.5,10],
-    [8,1.5,2,-12,.75,-6],[8,1.5,2,12,.75,6],
-    [3,4,3,-15,2,-5],[3,4,3,15,2,5],
-    [2,2,10,-5,1,-18],[2,2,10,5,1,18],
-  ];
-  const CCOLS=[[0x2a0844,0x6600ff],[0x2a0844,0x6600ff],[0x440011,0xff3300],[0x440011,0xff3300],
-    [0x003344,0x0099ff],[0x003344,0x0099ff],[0x331a00,0xff9900],[0x331a00,0xff9900],
-    [0x0d2a0d,0x00ff66],[0x0d2a0d,0x00ff66]];
-  COVER.forEach(([w,h,d,x,y,z],i)=>{
-    addBox(w,h,d,x,y,z,sm(CCOLS[i][0],CCOLS[i][1],.5));
-    COL.push({minX:x-w/2,maxX:x+w/2,minY:y-h/2,maxY:y+h/2,minZ:z-d/2,maxZ:z+d/2});
-  });
-  [[-39,0,-39,-39,7,-39],[39,0,-39,39,7,-39],[-39,0,39,-39,7,39],[39,0,39,39,7,39]]
-    .forEach(([x1,y1,z1,x2,y2,z2])=>{
-      scene.add(new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x1,y1,z1),new THREE.Vector3(x2,y2,z2)]),
-        new THREE.LineBasicMaterial({color:0xff6600})
-      ));
-    });
-  // Wall logos
-  const OJOL='/logo_owl.jpg', OJOL2='/logo_ojo.png';
-  const wallData=[
-    [OJOL,8,4,-16,5.5,-39.3,0],[OJOL2,8,4,0,5.5,-39.3,0],[OJOL,8,4,16,5.5,-39.3,0],
-    [OJOL2,8,4,-16,5.5,39.3,Math.PI],[OJOL,8,4,0,5.5,39.3,Math.PI],[OJOL2,8,4,16,5.5,39.3,Math.PI],
-    [OJOL,8,4,39.3,5.5,-16,-Math.PI/2],[OJOL2,8,4,39.3,5.5,0,-Math.PI/2],[OJOL,8,4,39.3,5.5,16,-Math.PI/2],
-    [OJOL2,8,4,-39.3,5.5,-16,Math.PI/2],[OJOL,8,4,-39.3,5.5,0,Math.PI/2],[OJOL2,8,4,-39.3,5.5,16,Math.PI/2],
-    [OJOL2,6,3,-16,1.8,-39.3,0],[OJOL,6,3,16,1.8,-39.3,0],
-    [OJOL,6,3,-16,1.8,39.3,Math.PI],[OJOL2,6,3,16,1.8,39.3,Math.PI],
-    [OJOL2,6,3,39.3,1.8,-16,-Math.PI/2],[OJOL,6,3,39.3,1.8,16,-Math.PI/2],
-    [OJOL,6,3,-39.3,1.8,-16,Math.PI/2],[OJOL2,6,3,-39.3,1.8,16,Math.PI/2],
-  ];
-  wallData.forEach(([url,w,h,x,y,z,ry])=>wallPlane(url,w,h,x,y,z,ry));
-  addWallText('PPC TEAM GAME');
-}
+// Motivational poster
+const posC=document.createElement('canvas'); posC.width=256; posC.height=384;
+const pctx=posC.getContext('2d');
+const grad=pctx.createLinearGradient(0,0,0,384);
+grad.addColorStop(0,'#1a2a4a'); grad.addColorStop(1,'#0a1020');
+pctx.fillStyle=grad; pctx.fillRect(0,0,256,384);
+pctx.font='bold 32px Arial'; pctx.fillStyle='#ff9900'; pctx.textAlign='center';
+pctx.fillText('HUSTLE',128,100); pctx.fillText('HARDER',128,150);
+pctx.font='16px Arial'; pctx.fillStyle='#aaaaaa'; pctx.fillText('— PlayOJO PPC Team',128,220);
+const posTex=new THREE.CanvasTexture(posC);
+const posMesh=new THREE.Mesh(new THREE.PlaneGeometry(1,1.5),new THREE.MeshBasicMaterial({map:posTex}));
+posMesh.position.set(39.7,3.5,-15); posMesh.rotation.y=-Math.PI/2; scene.add(posMesh);
 
-function buildOffice(){
-  scene.background=new THREE.Color(0xd0ccc4);
-  scene.fog=new THREE.Fog(0xd0ccc4,20,70);
-
-  // Lighting — office fluorescent feel
-  scene.add(new THREE.AmbientLight(0xfff5e0,1.6));
-  [[0,5,0],[0,5,-12],[0,5,12],[-10,5,0],[10,5,0]].forEach(([x,y,z])=>{
-    const l=new THREE.PointLight(0xfff5cc,1.2,20); l.position.set(x,y,z); scene.add(l);
-  });
-
-  // Floor — grey carpet
-  addBox(80,.15,80,0,0,0,sm(0x7a7a8a));
-  // Ceiling
-  addBox(80,.2,80,0,8,0,sm(0xeeeeee));
-
-  // Walls
-  const wallM=sm(0xf0ede8);
-  addBox(80,8,0.3,0,4,-40,wallM); addBox(80,8,0.3,0,4,40,wallM);
-  addBox(0.3,8,80,-40,4,0,wallM); addBox(0.3,8,80,40,4,0,wallM);
-
-  // Ceiling fluorescent lights
-  for(let x=-24;x<=24;x+=12){
-    for(let z=-24;z<=24;z+=12){
-      addBox(3,.1,.6,x,7.9,z,sm(0xfffde0,0xfffde0,.8));
-    }
-  }
-
-  // Floor carpet pattern — darker strips
-  for(let z=-36;z<=36;z+=6){
-    addBox(80,.01,.3,0,.16,z,sm(0x6e6e7e),false);
-  }
-
-  // ── OFFICE FURNITURE as cover ──
-
-  // Desks (8 desks in 2 rows)
-  const deskM=sm(0x8B6914);
-  const legM=sm(0x555555);
-  const monitorM=sm(0x222222,0x001133,.3);
-
-  function makeDesk(x,z,ry){
-    addBox(3,.07,1.5,x,.75,z,deskM);                  // desk top
-    addBox(.08,.7,.08,x-1.4,.35,z-.65,legM);           // legs
-    addBox(.08,.7,.08,x+1.4,.35,z-.65,legM);
-    addBox(.08,.7,.08,x-1.4,.35,z+.65,legM);
-    addBox(.08,.7,.08,x+1.4,.35,z+.65,legM);
-    // Monitor
-    const mx=Math.cos(ry)*0+x, mz=Math.sin(ry)*0+z;
-    addBox(.05,.5,.8,x,.75+.35,z,sm(0x1a1a1a));        // monitor stand back
-    addBox(.8,.5,.05,x,.75+.6,z-.3,monitorM);          // screen
-    // Collider for desk
-    COL.push({minX:x-1.5,maxX:x+1.5,minY:0,maxY:.82,minZ:z-.75,maxZ:z+.75});
-  }
-
-  // Row 1
-  makeDesk(-12,4,0); makeDesk(-6,4,0); makeDesk(0,4,0); makeDesk(6,4,0); makeDesk(12,4,0);
-  // Row 2
-  makeDesk(-12,-4,0); makeDesk(-6,-4,0); makeDesk(0,-4,0); makeDesk(6,-4,0); makeDesk(12,-4,0);
-
-  // Cubicle partitions
-  const partM=sm(0x5a7a9a);
-  const parts=[
-    [.1,1.4,3.5,-3,0.7,4],[.1,1.4,3.5,3,0.7,4],
-    [.1,1.4,3.5,-9,0.7,4],[.1,1.4,3.5,9,0.7,4],
-    [.1,1.4,3.5,-3,0.7,-4],[.1,1.4,3.5,3,0.7,-4],
-    [.1,1.4,3.5,-9,0.7,-4],[.1,1.4,3.5,9,0.7,-4],
-    [3.5,1.4,.1,0,0.7,2.25],[3.5,1.4,.1,0,0.7,-2.25],
-    [3.5,1.4,.1,-6,0.7,2.25],[3.5,1.4,.1,-6,0.7,-2.25],
-    [3.5,1.4,.1,6,0.7,2.25],[3.5,1.4,.1,6,0.7,-2.25],
-  ];
-  parts.forEach(([w,h,d,x,y,z])=>{
-    addBox(w,h,d,x,y,z,partM);
-    COL.push({minX:x-w/2,maxX:x+w/2,minY:0,maxY:y+h/2,minZ:z-d/2,maxZ:z+d/2});
-  });
-
-  // Filing cabinets
-  const cabM=sm(0x8899aa);
-  [[-18,2,-18],[-18,2,18],[18,2,-18],[18,2,18],[-18,2,0],[18,2,0]].forEach(([x,y,z])=>{
-    addBox(1.2,1.4,.6,x,.7,z,cabM);
-    COL.push({minX:x-.6,maxX:x+.6,minY:0,maxY:1.4,minZ:z-.3,maxZ:z+.3});
-  });
-
-  // Reception desk — centre back
-  addBox(6,.85,.1,0,.42,-15,sm(0x4a3010));
-  addBox(6,.07,2,0,.85,-14.5,sm(0x6b4820));
-  COL.push({minX:-3,maxX:3,minY:0,maxY:.92,minZ:-15.1,maxZ:-13.5});
-
-  // Water cooler
-  addBox(.4,1.1,.4,-19,.55,2,sm(0x99ccee));
-  addBox(.5,.15,.5,-19,1.1,2,sm(0x3377aa));
-  COL.push({minX:-19.25,maxX:-18.75,minY:0,maxY:1.2,minZ:1.75,maxZ:2.25});
-
-  // Sofa (meeting area corner)
-  addBox(3,.5,1.2,16,.25,-16,sm(0x334455));
-  addBox(3,.8,.15,16,.65,-16.6,sm(0x334455));   // backrest
-  COL.push({minX:14.5,maxX:17.5,minY:0,maxY:.75,minZ:-17,maxZ:-15.4});
-
-  // Round meeting table + chairs
-  const tblGeo=new THREE.CylinderGeometry(2,2,.08,16);
-  const tbl=new THREE.Mesh(tblGeo,sm(0x7a5520)); tbl.position.set(-16,0.75,0); scene.add(tbl);
-  COL.push({minX:-18,maxX:-14,minY:0,maxY:.84,minZ:-2,maxZ:2});
-  for(let a=0;a<6;a++){
-    const ang=a/6*Math.PI*2, cx=-16+Math.cos(ang)*2.6, cz=Math.sin(ang)*2.6;
-    addBox(.6,.6,.6,cx,.3,cz,sm(0x223344));
-    COL.push({minX:cx-.35,maxX:cx+.35,minY:0,maxY:.65,minZ:cz-.35,maxZ:cz+.35});
-  }
-
-  // Pillars
-  const pilM=sm(0xcccccc);
-  [[-15,4,-15],[-15,4,15],[15,4,-15],[15,4,15]].forEach(([x,y,z])=>{
-    addBox(.8,8,.8,x,4,z,pilM);
-    COL.push({minX:x-.45,maxX:x+.45,minY:0,maxY:8,minZ:z-.45,maxZ:z+.45});
-  });
-
-  // Printer/copier stations
-  const printM=sm(0x555555);
-  [[19,1,-8],[19,1,8],[-19,1,-8],[-19,1,8]].forEach(([x,y,z])=>{
-    addBox(1.2,.8,.8,x,.4,z,printM);
-    addBox(1.2,.1,.8,x,.81,z,sm(0xeeeeee));
-    COL.push({minX:x-.65,maxX:x+.65,minY:0,maxY:.85,minZ:z-.45,maxX:z+.45});
-  });
-
-  // Window frames on walls (decorative)
-  const winM=sm(0xaaddff,0x88ccff,.2);
-  [[-20,4,-39.2],[-8,4,-39.2],[8,4,-39.2],[20,4,-39.2]].forEach(([x,y,z])=>{
-    addBox(4,3,.05,x,y,z,winM);
-  });
-
-  // PlayOJO posters on walls
-  const OJOL='/logo_owl.jpg', OJOL2='/logo_ojo.png';
-  wallPlane(OJOL2,6,3,0,5,-39.2,0);
-  wallPlane(OJOL,5,5,-18,4.5,-39.2,0);
-  wallPlane(OJOL2,5,5,18,4.5,-39.2,0);
-  wallPlane(OJOL,6,3,0,5,39.2,Math.PI);
-  wallPlane(OJOL2,5,4,-39.1,4.5,0,Math.PI/2);
-  wallPlane(OJOL,5,4,39.1,4.5,0,-Math.PI/2);
-
-  // Whiteboard with text
-  addBox(5,.05,2.5,-20,3.5,-39.1,sm(0xffffff));
-  addWallText('PPC TEAM GAME');
-}
-
-function addWallText(txt){
-  const c=document.createElement('canvas'); c.width=512; c.height=112;
-  const x=c.getContext('2d');
-  x.clearRect(0,0,512,112); x.font='bold 68px Arial'; x.textAlign='center'; x.textBaseline='middle';
-  x.shadowColor='#ff9900'; x.shadowBlur=18; x.fillStyle='#ff6600'; x.fillText(txt,256,56);
-  const tex=new THREE.CanvasTexture(c);
-  [[0,2,-39.2,0],[0,2,39.2,Math.PI],[39.2,2,0,-Math.PI/2],[-39.2,2,0,Math.PI/2]].forEach(([x,y,z,r])=>{
-    const m=new THREE.Mesh(new THREE.PlaneGeometry(12,2.6),
-      new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
-    m.position.set(x,y,z); m.rotation.y=r; scene.add(m);
-  });
-}
-
-// ─────────────────────────────────────────────
-//  LASERS — simple Line-based, always visible
-// ─────────────────────────────────────────────
+// ─── LASERS ──────────────────────────────────
 const lasers=[];
 function spawnLaser(ox,oy,oz,dx,dy,dz,col){
-  const pts=[new THREE.Vector3(0,0,0), new THREE.Vector3(dx*5,dy*5,dz*5)];
+  const pts=[new THREE.Vector3(0,0,0),new THREE.Vector3(dx*6,dy*6,dz*6)];
   const geo=new THREE.BufferGeometry().setFromPoints(pts);
-  const line=new THREE.Line(geo, new THREE.LineBasicMaterial({color:col}));
-  line.position.set(ox,oy,oz);
-  scene.add(line);
-  const fl=new THREE.PointLight(col,5,6); fl.position.set(ox,oy,oz); scene.add(fl);
+  const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:col,linewidth:2}));
+  line.position.set(ox,oy,oz); scene.add(line);
+  const fl=new THREE.PointLight(col,6,5); fl.position.set(ox,oy,oz); scene.add(fl);
   setTimeout(()=>scene.remove(fl),80);
-  lasers.push({m:line,dx,dy,dz,life:0.3});
+  lasers.push({m:line,dx,dy,dz,life:0.28});
 }
 
-// ─────────────────────────────────────────────
-//  PLAYER MESHES
-// ─────────────────────────────────────────────
+// ─── PLAYER MESHES ───────────────────────────
 const pMeshes={};
-function nameSprite(name, hexCol){
+function nameSprite(name,hexCol){
   const c=document.createElement('canvas'); c.width=256; c.height=64;
   const x=c.getContext('2d');
   x.clearRect(0,0,256,64); x.font='bold 32px Arial'; x.textAlign='center'; x.textBaseline='middle';
@@ -620,7 +663,7 @@ function nameSprite(name, hexCol){
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));
   s.scale.set(2.2,.55,1); return s;
 }
-function makePMesh(name, skinIdx){
+function makePMesh(name,skinIdx){
   const sk=SKINS[skinIdx]||SKINS[0];
   const g=new THREE.Group();
   const bm=new THREE.MeshStandardMaterial({color:sk.col,emissive:sk.em,emissiveIntensity:.5});
@@ -629,13 +672,11 @@ function makePMesh(name, skinIdx){
   head.position.y=1.25; g.add(head);
   const gun=new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.55),new THREE.MeshStandardMaterial({color:0x333333,emissive:0x555555,emissiveIntensity:.4}));
   gun.position.set(.35,1,-.38); g.add(gun);
-  const lbl=nameSprite(name, sk.hex); lbl.position.set(0,2.1,0); g.add(lbl);
+  const lbl=nameSprite(name,sk.hex); lbl.position.set(0,2.1,0); g.add(lbl);
   scene.add(g); return g;
 }
 
-// ─────────────────────────────────────────────
-//  COLLISION
-// ─────────────────────────────────────────────
+// ─── COLLISION ───────────────────────────────
 function overlaps(x,y,z,c){
   const fy=y-PH;
   return x+PR>c.minX&&x-PR<c.maxX&&fy<c.maxY&&fy+PH>c.minY&&z+PR>c.minZ&&z-PR<c.maxZ;
@@ -644,7 +685,7 @@ function slide(pos,dx,dy,dz){
   if(!COL.some(c=>overlaps(pos.x+dx,pos.y,pos.z,c))) pos.x+=dx; else vel.x=0;
   if(!COL.some(c=>overlaps(pos.x,pos.y,pos.z+dz,c))) pos.z+=dz; else vel.z=0;
   if(!COL.some(c=>overlaps(pos.x,pos.y+dy,pos.z,c))) pos.y+=dy;
-  else{ if(vel.y<0)onGround=true; vel.y=0; }
+  else{if(vel.y<0)onGround=true;vel.y=0;}
 }
 function rayBox(ox,oy,oz,dx,dy,dz,c){
   const e=1e-8,ix=1/(Math.abs(dx)<e?e:dx),iy=1/(Math.abs(dy)<e?e:dy),iz=1/(Math.abs(dz)<e?e:dz);
@@ -657,13 +698,10 @@ function nearBox(ox,oy,oz,dx,dy,dz){
   let t=Infinity; COL.forEach(c=>{const h=rayBox(ox,oy,oz,dx,dy,dz,c);if(h<t)t=h;}); return t;
 }
 
-// ─────────────────────────────────────────────
-//  INPUT
-// ─────────────────────────────────────────────
+// ─── INPUT ───────────────────────────────────
 const keys={};
 document.addEventListener('keydown',e=>{
-  keys[e.code]=true;
-  if(!inGame)return;
+  keys[e.code]=true; if(!inGame)return;
   if(e.code==='KeyR')socket.emit('reload');
   if(e.code==='Digit1')sw('rifle');
   if(e.code==='Digit2')sw('pistol');
@@ -671,61 +709,50 @@ document.addEventListener('keydown',e=>{
   if(e.code==='Tab'){e.preventDefault();showSB(true);}
   if(e.code==='Space'&&onGround&&alive){vel.y=JV;onGround=false;}
 });
-document.addEventListener('keyup',e=>{ keys[e.code]=false; if(e.code==='Tab')showSB(false); });
-
+document.addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Tab')showSB(false);});
 document.addEventListener('mousedown',e=>{
-  if(e.button===0) shooting=true;
+  if(e.button===0)shooting=true;
   if(e.button===2&&curWeapon==='sniper'&&pointerLocked){
-    scoped=true; cam.fov=SCOPE_FOV; cam.updateProjectionMatrix();
+    scoped=true;cam.fov=SCOPE_FOV;cam.updateProjectionMatrix();
     document.getElementById('scope-overlay').classList.add('on');
     document.getElementById('xhair').style.display='none';
   }
 });
 document.addEventListener('mouseup',e=>{
-  if(e.button===0) shooting=false;
-  if(e.button===2){
-    scoped=false; cam.fov=NORMAL_FOV; cam.updateProjectionMatrix();
+  if(e.button===0)shooting=false;
+  if(e.button===2){scoped=false;cam.fov=NORMAL_FOV;cam.updateProjectionMatrix();
     document.getElementById('scope-overlay').classList.remove('on');
-    document.getElementById('xhair').style.display='block';
-  }
+    document.getElementById('xhair').style.display='block';}
 });
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 document.addEventListener('mousemove',e=>{
   if(!pointerLocked||!inGame||!alive)return;
-  yaw-=e.movementX*.002; pitch-=e.movementY*.002;
+  yaw-=e.movementX*.002;pitch-=e.movementY*.002;
   pitch=Math.max(-Math.PI/2.3,Math.min(Math.PI/2.3,pitch));
 });
-
-function tryLock(){ if(inGame) canvas.requestPointerLock(); }
+function tryLock(){if(inGame)canvas.requestPointerLock();}
 canvas.addEventListener('click',tryLock);
 document.getElementById('lockprompt').addEventListener('click',tryLock);
 document.addEventListener('pointerlockchange',()=>{
   pointerLocked=document.pointerLockElement===canvas;
-  if(inGame) document.getElementById('lockprompt').style.display=(pointerLocked||!alive)?'none':'flex';
+  if(inGame)document.getElementById('lockprompt').style.display=(pointerLocked||!alive)?'none':'flex';
 });
 document.addEventListener('pointerlockerror',()=>setTimeout(tryLock,600));
-
 function sw(w){
-  if(scoped&&w!=='sniper'){
-    scoped=false; cam.fov=NORMAL_FOV; cam.updateProjectionMatrix();
+  if(scoped&&w!=='sniper'){scoped=false;cam.fov=NORMAL_FOV;cam.updateProjectionMatrix();
     document.getElementById('scope-overlay').classList.remove('on');
-    document.getElementById('xhair').style.display='block';
-  }
-  curWeapon=w;
-  socket.emit('switchWeapon',{weapon:w});
+    document.getElementById('xhair').style.display='block';}
+  curWeapon=w;socket.emit('switchWeapon',{weapon:w});
   document.querySelectorAll('.wbtn').forEach(b=>b.classList.toggle('on',b.dataset.w===w));
   document.getElementById('wep-name').textContent=WLABEL[w];
   document.getElementById('slot-label').textContent=WSLOT[w];
 }
 document.querySelectorAll('.wbtn').forEach(b=>b.addEventListener('click',()=>sw(b.dataset.w)));
 
-// ─────────────────────────────────────────────
-//  SOCKET EVENTS
-// ─────────────────────────────────────────────
+// ─── SOCKET EVENTS ───────────────────────────
 socket.on('connect_error',()=>alert('Cannot connect to server.'));
-
 socket.on('joined',data=>{
-  myId=data.id; myTeam=data.player.team;
+  myId=data.id;myTeam=data.player.team;
   cam.position.set(data.player.x,data.player.y+1.7,data.player.z);
   document.getElementById('ammo-cur').textContent=data.player.ammo;
   document.getElementById('ammo-res').textContent=data.player.reserve;
@@ -735,88 +762,70 @@ socket.on('joined',data=>{
   document.getElementById('teambadge').textContent=data.player.name;
   document.getElementById('teambadge').style.color=sk.hex;
   if(data.roundActive)setTimer(data.roundTimer);
-  // Build selected map
-  if(selectedMap==='office') buildOffice(); else buildArena();
   inGame=true;
   document.getElementById('lockprompt').style.display='flex';
 });
-
 socket.on('playerList',data=>{
   remotePlayers=data;
   Object.entries(data).forEach(([id,p])=>{
     if(id===myId)return;
-    if(!pMeshes[id]) pMeshes[id]=makePMesh(p.name, p.skin||0);
+    if(!pMeshes[id])pMeshes[id]=makePMesh(p.name,p.skin||0);
     pMeshes[id].position.set(p.x,p.y,p.z);
     pMeshes[id].rotation.y=p.rotY||0;
     pMeshes[id].visible=p.alive;
   });
-  Object.keys(pMeshes).forEach(id=>{ if(!data[id]){scene.remove(pMeshes[id]);delete pMeshes[id];} });
+  Object.keys(pMeshes).forEach(id=>{if(!data[id]){scene.remove(pMeshes[id]);delete pMeshes[id];}});
 });
-
 socket.on('playerMoved',({id,x,y,z,rotY})=>{
   if(id===myId)return;
-  if(!pMeshes[id]){
-    if(remotePlayers[id]) pMeshes[id]=makePMesh(remotePlayers[id].name, remotePlayers[id].skin||0);
-    else return;
-  }
-  pMeshes[id].position.set(x,y,z);
-  pMeshes[id].rotation.y=rotY;
+  if(!pMeshes[id]){if(remotePlayers[id])pMeshes[id]=makePMesh(remotePlayers[id].name,remotePlayers[id].skin||0);else return;}
+  pMeshes[id].position.set(x,y,z);pMeshes[id].rotation.y=rotY;
   if(remotePlayers[id])Object.assign(remotePlayers[id],{x,y,z,rotY});
 });
-
 socket.on('playerShot',({id,x,y,z,dx,dy,dz,skin})=>{
   if(id===myId)return;
-  const col=(SKINS[skin]||SKINS[0]).laser;
-  spawnLaser(x,y+.8,z,dx,dy,dz,col);
+  spawnLaser(x,y+.8,z,dx,dy,dz,(SKINS[skin]||SKINS[0]).laser);
 });
-
 socket.on('playerHit',({id,health:hp})=>{
   if(id===myId){
     setHP(hp);
-    // Red flash
     const fl=document.getElementById('dmg-flash');
-    fl.style.opacity='1';
-    setTimeout(()=>fl.style.opacity='0',200);
+    fl.style.opacity='1';setTimeout(()=>fl.style.opacity='0',200);
   }
   if(remotePlayers[id])remotePlayers[id].health=hp;
   const hm=document.getElementById('hitfx');
-  hm.style.opacity='1'; setTimeout(()=>hm.style.opacity='0',140);
+  hm.style.opacity='1';setTimeout(()=>hm.style.opacity='0',140);
 });
-
 socket.on('playerKilled',({id,killFeed})=>{
   if(id===myId)showDeath();
   if(pMeshes[id])pMeshes[id].visible=false;
   drawKF(killFeed);
 });
-
 socket.on('playerRespawned',({id,x,y,z})=>{
-  if(id===myId){
-    alive=true; cam.position.set(x,y+1.7,z); setHP(100);
+  if(id===myId){alive=true;cam.position.set(x,y+1.7,z);setHP(100);
     document.getElementById('deathscreen').style.display='none';
-    document.getElementById('lockprompt').style.display='flex';
-  }
+    document.getElementById('lockprompt').style.display='flex';}
   if(pMeshes[id]){pMeshes[id].position.set(x,y,z);pMeshes[id].visible=true;}
 });
-
-socket.on('roundStart',({players,scores})=>{ remotePlayers=players; setScores(scores); });
+socket.on('roundStart',({players,scores})=>{remotePlayers=players;setScores(scores);});
 socket.on('roundEnd',({winner,scores})=>{
-  setScores(scores); roundNum++;
+  setScores(scores);roundNum++;
   document.getElementById('round-num').textContent=roundNum;
-  flash(winner==='draw'?'ROUND DRAW':'PLAYER '+winner+' WINS ROUND');
-  showSB(true); setTimeout(()=>showSB(false),4500);
+  flash(winner==='draw'?'ROUND DRAW':'ROUND OVER');
+  showSB(true);setTimeout(()=>showSB(false),4500);
 });
 socket.on('matchOver',({winner})=>{
   const el=document.getElementById('matchover');
   document.getElementById('match-result').textContent=winner===myId?'🏆 YOU WIN!':'💀 DEFEATED';
   document.getElementById('match-result').style.color=winner===myId?'#ffcc00':'#ff2222';
-  el.style.display='flex'; setTimeout(()=>el.style.display='none',9000);
+  el.style.display='flex';setTimeout(()=>el.style.display='none',9000);
 });
 socket.on('timerUpdate',setTimer);
 socket.on('ammoUpdate',({ammo,reserve})=>{
   document.getElementById('ammo-cur').textContent=ammo;
   document.getElementById('ammo-res').textContent=reserve;
 });
-socket.on('scoreUpdate',p=>{ remotePlayers=p; });
+socket.on('scoreUpdate',p=>{remotePlayers=p;});
 socket.on('noAmmo',()=>{
   const el=document.getElementById('wep-name');
   el.textContent='-- RELOAD (R) --';
@@ -824,9 +833,7 @@ socket.on('noAmmo',()=>{
 });
 socket.on('serverFull',()=>alert('Server is full.'));
 
-// ─────────────────────────────────────────────
-//  UI HELPERS
-// ─────────────────────────────────────────────
+// ─── UI ──────────────────────────────────────
 function setHP(hp){
   health=Math.max(0,hp);
   document.getElementById('hp-num').textContent=health;
@@ -850,19 +857,17 @@ function drawKF(kf){
   ).join('');
 }
 function showDeath(){
-  alive=false; pointerLocked=false;
-  scoped=false; cam.fov=NORMAL_FOV; cam.updateProjectionMatrix();
+  alive=false;pointerLocked=false;
+  scoped=false;cam.fov=NORMAL_FOV;cam.updateProjectionMatrix();
   document.getElementById('scope-overlay').classList.remove('on');
   document.getElementById('xhair').style.display='block';
   document.getElementById('deathscreen').style.display='flex';
   document.getElementById('lockprompt').style.display='none';
   let t=5;
   document.getElementById('respawn-timer').textContent='Respawning in 5...';
-  const iv=setInterval(()=>{
-    t--;
+  const iv=setInterval(()=>{t--;
     document.getElementById('respawn-timer').textContent=t>0?'Respawning in '+t+'...':'RESPAWNING...';
-    if(t<=0)clearInterval(iv);
-  },1000);
+    if(t<=0)clearInterval(iv);},1000);
 }
 function showSB(on){
   const sb=document.getElementById('scoreboard');
@@ -875,87 +880,66 @@ function showSB(on){
       const cls=p.id===myId?'sb-me':p.name==='BOT'?'sb-bot':'';
       const sk=SKINS[p.skin||0];
       return '<tr class="'+cls+'"><td style="color:'+sk.hex+'">'+p.name+(p.id===myId?' ★':'')+'</td>'+
-        '<td>'+p.kills+'</td><td>'+p.deaths+'</td>'+
-        '<td class="'+kdc+'">'+kd+'</td></tr>';
+        '<td>'+p.kills+'</td><td>'+p.deaths+'</td><td class="'+kdc+'">'+kd+'</td></tr>';
     }).join('');
-  } else sb.classList.remove('show');
+  }else sb.classList.remove('show');
 }
 function flash(txt){
   const el=document.createElement('div');
   el.style.cssText='position:fixed;top:36%;left:50%;transform:translate(-50%,-50%);'+
     'font-size:1.8rem;font-weight:900;color:#ffcc44;z-index:40;pointer-events:none;letter-spacing:5px;font-family:Arial';
-  el.textContent=txt; document.body.appendChild(el);
-  setTimeout(()=>el.remove(),2600);
+  el.textContent=txt;document.body.appendChild(el);setTimeout(()=>el.remove(),2600);
 }
 
-// ─────────────────────────────────────────────
-//  GAME LOOP
-// ─────────────────────────────────────────────
+// ─── GAME LOOP ────────────────────────────────
 const clock=new THREE.Clock();
 const euler=new THREE.Euler(0,0,0,'YXZ');
-const fv=new THREE.Vector3(), rv=new THREE.Vector3(), md=new THREE.Vector3();
-
+const fv=new THREE.Vector3(),rv=new THREE.Vector3(),md=new THREE.Vector3();
 function tick(dt){
-  // Update lasers
   for(let i=lasers.length-1;i>=0;i--){
-    const l=lasers[i]; l.life-=dt;
-    l.m.position.x+=l.dx*22*dt;
-    l.m.position.y+=l.dy*22*dt;
-    l.m.position.z+=l.dz*22*dt;
+    const l=lasers[i];l.life-=dt;
+    l.m.position.x+=l.dx*20*dt;l.m.position.y+=l.dy*20*dt;l.m.position.z+=l.dz*20*dt;
     if(l.life<=0){scene.remove(l.m);lasers.splice(i,1);}
   }
   if(!inGame||!alive)return;
   vel.y+=G*dt;
   const spd=(keys['ShiftLeft']||keys['ShiftRight'])?RN:WK;
-  fv.set(-Math.sin(yaw),0,-Math.cos(yaw));
-  rv.set(Math.cos(yaw),0,-Math.sin(yaw));
+  fv.set(-Math.sin(yaw),0,-Math.cos(yaw));rv.set(Math.cos(yaw),0,-Math.sin(yaw));
   md.set(0,0,0);
-  if(keys['KeyW'])md.add(fv); if(keys['KeyS'])md.sub(fv);
-  if(keys['KeyA'])md.sub(rv); if(keys['KeyD'])md.add(rv);
+  if(keys['KeyW'])md.add(fv);if(keys['KeyS'])md.sub(fv);
+  if(keys['KeyA'])md.sub(rv);if(keys['KeyD'])md.add(rv);
   if(md.lengthSq()>0)md.normalize();
-  vel.x=md.x*spd; vel.z=md.z*spd;
+  vel.x=md.x*spd;vel.z=md.z*spd;
   slide(cam.position,vel.x*dt,vel.y*dt,vel.z*dt);
   if(cam.position.y<1.7){cam.position.y=1.7;vel.y=0;onGround=true;}
   cam.position.x=Math.max(-39,Math.min(39,cam.position.x));
   cam.position.z=Math.max(-39,Math.min(39,cam.position.z));
-  euler.set(pitch,yaw,0); cam.quaternion.setFromEuler(euler);
+  euler.set(pitch,yaw,0);cam.quaternion.setFromEuler(euler);
   sendT+=dt;
-  if(sendT>=.05){
-    sendT=0;
-    socket.emit('move',{x:cam.position.x,y:cam.position.y-1.7,z:cam.position.z,rotY:yaw});
-  }
-  // Shooting — spawn laser immediately for local player
+  if(sendT>=.05){sendT=0;socket.emit('move',{x:cam.position.x,y:cam.position.y-1.7,z:cam.position.z,rotY:yaw});}
   if(shooting&&pointerLocked){
     const now=Date.now();
     if(now-lastShot>=WRATE[curWeapon]){
       lastShot=now;
       euler.set(pitch,yaw,0);
       const dir=new THREE.Vector3(0,0,-1).applyEuler(euler).normalize();
-      const ox=cam.position.x, oy=cam.position.y-.3, oz=cam.position.z;
-      spawnLaser(ox,oy,oz,dir.x,dir.y,dir.z,SKINS[selectedSkin].laser);
+      spawnLaser(cam.position.x,cam.position.y-.3,cam.position.z,dir.x,dir.y,dir.z,SKINS[selectedSkin].laser);
       socket.emit('shoot',{dirX:dir.x,dirY:dir.y,dirZ:dir.z});
       if(curWeapon!=='rifle')shooting=false;
     }
   }
 }
-
-function animate(){
-  requestAnimationFrame(animate);
-  tick(Math.min(clock.getDelta(),.05));
-  renderer.render(scene,cam);
-}
+function animate(){requestAnimationFrame(animate);tick(Math.min(clock.getDelta(),.05));renderer.render(scene,cam);}
 animate();
 
-// ─────────────────────────────────────────────
-//  JOIN
-// ─────────────────────────────────────────────
+// ─── JOIN ─────────────────────────────────────
 document.getElementById('joinBtn').addEventListener('click',()=>{
   const name=document.getElementById('nameInput').value.trim()||'OJO Player';
   const bots=document.getElementById('botsCheck').checked;
   const btn=document.getElementById('joinBtn');
-  btn.disabled=true; btn.textContent='CONNECTING...';
-  if(socket.connected) socket.emit('join',{name,withBots:bots,skin:selectedSkin,map:selectedMap});
-  else socket.once('connect',()=>socket.emit('join',{name,withBots:bots,skin:selectedSkin,map:selectedMap}));
+  btn.disabled=true;btn.textContent='CONNECTING...';
+  if(socket.connected)socket.emit('join',{name,withBots:bots,skin:selectedSkin});
+  else socket.once('connect',()=>socket.emit('join',{name,withBots:bots,skin:selectedSkin}));
 });
 document.getElementById('nameInput').addEventListener('keydown',e=>{
   if(e.key==='Enter')document.getElementById('joinBtn').click();
