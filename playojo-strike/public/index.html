@@ -26,8 +26,16 @@ body{background:#111;color:#fff;font-family:'Segoe UI',Arial,sans-serif;overflow
   letter-spacing:2px;text-transform:uppercase}
 #joinBtn:disabled{opacity:.45;cursor:not-allowed}
 
-/* Skin selector */
-#skin-title{font-size:.65rem;color:#888;letter-spacing:3px;text-transform:uppercase;margin-bottom:.6rem;align-self:flex-start}
+/* Map selector */
+#map-title{font-size:.65rem;color:#888;letter-spacing:3px;text-transform:uppercase;margin-bottom:.6rem;align-self:flex-start}
+#map-grid{display:flex;gap:10px;margin-bottom:1rem}
+.map-opt{width:90px;height:60px;border-radius:6px;border:2px solid #2a2a2a;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:#111;transition:.15s;gap:4px;padding:4px}
+.map-opt span.ico{font-size:1.3rem;line-height:1}
+.map-opt span.lbl{font-size:.5rem;color:#888;letter-spacing:1px;text-transform:uppercase;text-align:center}
+.map-opt:hover{border-color:#ff9900;transform:scale(1.05)}
+.map-opt.sel{border-color:#ff6600;box-shadow:0 0 10px #ff660055}
 #skin-grid{display:flex;gap:9px;margin-bottom:1rem;flex-wrap:wrap;justify-content:center}
 .skin-opt{width:52px;height:52px;border-radius:6px;border:2px solid #2a2a2a;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -159,8 +167,13 @@ canvas{display:block;width:100vw;height:100vh}
     <div class="sub">PPC Free For All</div>
     <input id="nameInput" placeholder="Enter callsign..." maxlength="16" autocomplete="off">
 
-    <div id="skin-title">Choose your skin</div>
-    <div id="skin-grid">
+    <div id="map-title">Choose map</div>
+    <div id="map-grid">
+      <div class="map-opt sel" data-map="arena"><span class="ico">🚀</span><span class="lbl">Neon Arena</span></div>
+      <div class="map-opt"    data-map="office"><span class="ico">🏢</span><span class="lbl">Office</span></div>
+    </div>
+
+    <div id="skin-title">Choose your skin</div>    <div id="skin-grid">
       <div class="skin-opt sel" data-skin="0"><span class="ico">🟠</span><span class="lbl">Blaze</span></div>
       <div class="skin-opt"    data-skin="1"><span class="ico">🔵</span><span class="lbl">Frost</span></div>
       <div class="skin-opt"    data-skin="2"><span class="ico">🟢</span><span class="lbl">Venom</span></div>
@@ -358,79 +371,226 @@ fill.position.set(-10,10,-10); scene.add(fill);
   .forEach(([x,y,z,c])=>{ const l=new THREE.PointLight(c,1.8,30); l.position.set(x,y,z); scene.add(l); });
 
 // ─────────────────────────────────────────────
-//  MAP
-// ─────────────────────────────────────────────
-function sm(col,em=0,ei=0){ return new THREE.MeshStandardMaterial({color:col,emissive:em,emissiveIntensity:ei,roughness:.7}); }
-function addBox(w,h,d,x,y,z,mat){
-  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
-  m.position.set(x,y,z); m.castShadow=m.receiveShadow=true; scene.add(m); return m;
-}
-addBox(80,.2,80,0,0,0,sm(0x1a1a3a));
-const grid=new THREE.GridHelper(80,40,0xff6600,0x333355); grid.position.y=.11; scene.add(grid);
-const wm=sm(0x222244,0x000833,.3);
-addBox(80,8,1,0,4,-40,wm); addBox(80,8,1,0,4,40,wm);
-addBox(1,8,80,-40,4,0,wm); addBox(1,8,80,40,4,0,wm);
-const COVER=[
-  [4,2,4,-8,1,0],[4,2,4,8,1,0],
-  [2,3,8,0,1.5,-10],[2,3,8,0,1.5,10],
-  [8,1.5,2,-12,.75,-6],[8,1.5,2,12,.75,6],
-  [3,4,3,-15,2,-5],[3,4,3,15,2,5],
-  [2,2,10,-5,1,-18],[2,2,10,5,1,18],
-];
-const CCOLS=[[0x2a0844,0x6600ff],[0x2a0844,0x6600ff],[0x440011,0xff3300],[0x440011,0xff3300],
-  [0x003344,0x0099ff],[0x003344,0x0099ff],[0x331a00,0xff9900],[0x331a00,0xff9900],
-  [0x0d2a0d,0x00ff66],[0x0d2a0d,0x00ff66]];
-const COL=[];
-COVER.forEach(([w,h,d,x,y,z],i)=>{
-  addBox(w,h,d,x,y,z,sm(CCOLS[i][0],CCOLS[i][1],.5));
-  COL.push({minX:x-w/2,maxX:x+w/2,minY:y-h/2,maxY:y+h/2,minZ:z-d/2,maxZ:z+d/2});
-});
-[[-39,0,-39,-39,7,-39],[39,0,-39,39,7,-39],[-39,0,39,-39,7,39],[39,0,39,39,7,39]]
-  .forEach(([x1,y1,z1,x2,y2,z2])=>{
-    scene.add(new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x1,y1,z1),new THREE.Vector3(x2,y2,z2)]),
-      new THREE.LineBasicMaterial({color:0xff6600})
-    ));
-  });
-
-// ─────────────────────────────────────────────
-//  WALL LOGOS & TEXT
+//  TEXTURE LOADER (shared)
 // ─────────────────────────────────────────────
 const TL = new THREE.TextureLoader();
 function wallPlane(url,w,h,x,y,z,ry){
   TL.load(url, tex=>{
-    tex.colorSpace = THREE.SRGBColorSpace;
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(w,h),
+    tex.colorSpace=THREE.SRGBColorSpace;
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),
       new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
     m.position.set(x,y,z); m.rotation.y=ry; scene.add(m);
   });
 }
-const OJOL='/logo_owl.jpg', OJOL2='/logo_ojo.png';
-const wallData=[
-  [OJOL, 8,4, -16,5.5,-39.3,0],[OJOL2,8,4, 0,5.5,-39.3,0],[OJOL, 8,4, 16,5.5,-39.3,0],
-  [OJOL2,8,4,-16,5.5, 39.3,Math.PI],[OJOL, 8,4, 0,5.5, 39.3,Math.PI],[OJOL2,8,4,16,5.5,39.3,Math.PI],
-  [OJOL, 8,4, 39.3,5.5,-16,-Math.PI/2],[OJOL2,8,4,39.3,5.5,0,-Math.PI/2],[OJOL,8,4,39.3,5.5,16,-Math.PI/2],
-  [OJOL2,8,4,-39.3,5.5,-16,Math.PI/2],[OJOL,8,4,-39.3,5.5,0,Math.PI/2],[OJOL2,8,4,-39.3,5.5,16,Math.PI/2],
-  [OJOL2,6,3,-16,1.8,-39.3,0],[OJOL,6,3,16,1.8,-39.3,0],
-  [OJOL,6,3,-16,1.8,39.3,Math.PI],[OJOL2,6,3,16,1.8,39.3,Math.PI],
-  [OJOL2,6,3,39.3,1.8,-16,-Math.PI/2],[OJOL,6,3,39.3,1.8,16,-Math.PI/2],
-  [OJOL,6,3,-39.3,1.8,-16,Math.PI/2],[OJOL2,6,3,-39.3,1.8,16,Math.PI/2],
-];
-wallData.forEach(([url,w,h,x,y,z,ry])=>wallPlane(url,w,h,x,y,z,ry));
 
-function makeTex(txt){
+// ─────────────────────────────────────────────
+//  COLLIDERS (filled by map builder)
+// ─────────────────────────────────────────────
+const COL=[];
+function sm(col,em=0,ei=0){ return new THREE.MeshStandardMaterial({color:col,emissive:em,emissiveIntensity:ei,roughness:.7}); }
+function addBox(w,h,d,x,y,z,mat,cast=true){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+  m.position.set(x,y,z); if(cast){m.castShadow=true;m.receiveShadow=true;} scene.add(m); return m;
+}
+
+function buildArena(){
+  scene.background=new THREE.Color(0x2a2a4a);
+  scene.fog=new THREE.Fog(0x2a2a4a,25,90);
+  addBox(80,.2,80,0,0,0,sm(0x1a1a3a));
+  const grid=new THREE.GridHelper(80,40,0xff6600,0x333355); grid.position.y=.11; scene.add(grid);
+  const wm=sm(0x222244,0x000833,.3);
+  addBox(80,8,1,0,4,-40,wm); addBox(80,8,1,0,4,40,wm);
+  addBox(1,8,80,-40,4,0,wm); addBox(1,8,80,40,4,0,wm);
+  const COVER=[
+    [4,2,4,-8,1,0],[4,2,4,8,1,0],
+    [2,3,8,0,1.5,-10],[2,3,8,0,1.5,10],
+    [8,1.5,2,-12,.75,-6],[8,1.5,2,12,.75,6],
+    [3,4,3,-15,2,-5],[3,4,3,15,2,5],
+    [2,2,10,-5,1,-18],[2,2,10,5,1,18],
+  ];
+  const CCOLS=[[0x2a0844,0x6600ff],[0x2a0844,0x6600ff],[0x440011,0xff3300],[0x440011,0xff3300],
+    [0x003344,0x0099ff],[0x003344,0x0099ff],[0x331a00,0xff9900],[0x331a00,0xff9900],
+    [0x0d2a0d,0x00ff66],[0x0d2a0d,0x00ff66]];
+  COVER.forEach(([w,h,d,x,y,z],i)=>{
+    addBox(w,h,d,x,y,z,sm(CCOLS[i][0],CCOLS[i][1],.5));
+    COL.push({minX:x-w/2,maxX:x+w/2,minY:y-h/2,maxY:y+h/2,minZ:z-d/2,maxZ:z+d/2});
+  });
+  [[-39,0,-39,-39,7,-39],[39,0,-39,39,7,-39],[-39,0,39,-39,7,39],[39,0,39,39,7,39]]
+    .forEach(([x1,y1,z1,x2,y2,z2])=>{
+      scene.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x1,y1,z1),new THREE.Vector3(x2,y2,z2)]),
+        new THREE.LineBasicMaterial({color:0xff6600})
+      ));
+    });
+  // Wall logos
+  const OJOL='/logo_owl.jpg', OJOL2='/logo_ojo.png';
+  const wallData=[
+    [OJOL,8,4,-16,5.5,-39.3,0],[OJOL2,8,4,0,5.5,-39.3,0],[OJOL,8,4,16,5.5,-39.3,0],
+    [OJOL2,8,4,-16,5.5,39.3,Math.PI],[OJOL,8,4,0,5.5,39.3,Math.PI],[OJOL2,8,4,16,5.5,39.3,Math.PI],
+    [OJOL,8,4,39.3,5.5,-16,-Math.PI/2],[OJOL2,8,4,39.3,5.5,0,-Math.PI/2],[OJOL,8,4,39.3,5.5,16,-Math.PI/2],
+    [OJOL2,8,4,-39.3,5.5,-16,Math.PI/2],[OJOL,8,4,-39.3,5.5,0,Math.PI/2],[OJOL2,8,4,-39.3,5.5,16,Math.PI/2],
+    [OJOL2,6,3,-16,1.8,-39.3,0],[OJOL,6,3,16,1.8,-39.3,0],
+    [OJOL,6,3,-16,1.8,39.3,Math.PI],[OJOL2,6,3,16,1.8,39.3,Math.PI],
+    [OJOL2,6,3,39.3,1.8,-16,-Math.PI/2],[OJOL,6,3,39.3,1.8,16,-Math.PI/2],
+    [OJOL,6,3,-39.3,1.8,-16,Math.PI/2],[OJOL2,6,3,-39.3,1.8,16,Math.PI/2],
+  ];
+  wallData.forEach(([url,w,h,x,y,z,ry])=>wallPlane(url,w,h,x,y,z,ry));
+  addWallText('PPC TEAM GAME');
+}
+
+function buildOffice(){
+  scene.background=new THREE.Color(0xd0ccc4);
+  scene.fog=new THREE.Fog(0xd0ccc4,20,70);
+
+  // Lighting — office fluorescent feel
+  scene.add(new THREE.AmbientLight(0xfff5e0,1.6));
+  [[0,5,0],[0,5,-12],[0,5,12],[-10,5,0],[10,5,0]].forEach(([x,y,z])=>{
+    const l=new THREE.PointLight(0xfff5cc,1.2,20); l.position.set(x,y,z); scene.add(l);
+  });
+
+  // Floor — grey carpet
+  addBox(80,.15,80,0,0,0,sm(0x7a7a8a));
+  // Ceiling
+  addBox(80,.2,80,0,8,0,sm(0xeeeeee));
+
+  // Walls
+  const wallM=sm(0xf0ede8);
+  addBox(80,8,0.3,0,4,-40,wallM); addBox(80,8,0.3,0,4,40,wallM);
+  addBox(0.3,8,80,-40,4,0,wallM); addBox(0.3,8,80,40,4,0,wallM);
+
+  // Ceiling fluorescent lights
+  for(let x=-24;x<=24;x+=12){
+    for(let z=-24;z<=24;z+=12){
+      addBox(3,.1,.6,x,7.9,z,sm(0xfffde0,0xfffde0,.8));
+    }
+  }
+
+  // Floor carpet pattern — darker strips
+  for(let z=-36;z<=36;z+=6){
+    addBox(80,.01,.3,0,.16,z,sm(0x6e6e7e),false);
+  }
+
+  // ── OFFICE FURNITURE as cover ──
+
+  // Desks (8 desks in 2 rows)
+  const deskM=sm(0x8B6914);
+  const legM=sm(0x555555);
+  const monitorM=sm(0x222222,0x001133,.3);
+
+  function makeDesk(x,z,ry){
+    addBox(3,.07,1.5,x,.75,z,deskM);                  // desk top
+    addBox(.08,.7,.08,x-1.4,.35,z-.65,legM);           // legs
+    addBox(.08,.7,.08,x+1.4,.35,z-.65,legM);
+    addBox(.08,.7,.08,x-1.4,.35,z+.65,legM);
+    addBox(.08,.7,.08,x+1.4,.35,z+.65,legM);
+    // Monitor
+    const mx=Math.cos(ry)*0+x, mz=Math.sin(ry)*0+z;
+    addBox(.05,.5,.8,x,.75+.35,z,sm(0x1a1a1a));        // monitor stand back
+    addBox(.8,.5,.05,x,.75+.6,z-.3,monitorM);          // screen
+    // Collider for desk
+    COL.push({minX:x-1.5,maxX:x+1.5,minY:0,maxY:.82,minZ:z-.75,maxZ:z+.75});
+  }
+
+  // Row 1
+  makeDesk(-12,4,0); makeDesk(-6,4,0); makeDesk(0,4,0); makeDesk(6,4,0); makeDesk(12,4,0);
+  // Row 2
+  makeDesk(-12,-4,0); makeDesk(-6,-4,0); makeDesk(0,-4,0); makeDesk(6,-4,0); makeDesk(12,-4,0);
+
+  // Cubicle partitions
+  const partM=sm(0x5a7a9a);
+  const parts=[
+    [.1,1.4,3.5,-3,0.7,4],[.1,1.4,3.5,3,0.7,4],
+    [.1,1.4,3.5,-9,0.7,4],[.1,1.4,3.5,9,0.7,4],
+    [.1,1.4,3.5,-3,0.7,-4],[.1,1.4,3.5,3,0.7,-4],
+    [.1,1.4,3.5,-9,0.7,-4],[.1,1.4,3.5,9,0.7,-4],
+    [3.5,1.4,.1,0,0.7,2.25],[3.5,1.4,.1,0,0.7,-2.25],
+    [3.5,1.4,.1,-6,0.7,2.25],[3.5,1.4,.1,-6,0.7,-2.25],
+    [3.5,1.4,.1,6,0.7,2.25],[3.5,1.4,.1,6,0.7,-2.25],
+  ];
+  parts.forEach(([w,h,d,x,y,z])=>{
+    addBox(w,h,d,x,y,z,partM);
+    COL.push({minX:x-w/2,maxX:x+w/2,minY:0,maxY:y+h/2,minZ:z-d/2,maxZ:z+d/2});
+  });
+
+  // Filing cabinets
+  const cabM=sm(0x8899aa);
+  [[-18,2,-18],[-18,2,18],[18,2,-18],[18,2,18],[-18,2,0],[18,2,0]].forEach(([x,y,z])=>{
+    addBox(1.2,1.4,.6,x,.7,z,cabM);
+    COL.push({minX:x-.6,maxX:x+.6,minY:0,maxY:1.4,minZ:z-.3,maxZ:z+.3});
+  });
+
+  // Reception desk — centre back
+  addBox(6,.85,.1,0,.42,-15,sm(0x4a3010));
+  addBox(6,.07,2,0,.85,-14.5,sm(0x6b4820));
+  COL.push({minX:-3,maxX:3,minY:0,maxY:.92,minZ:-15.1,maxZ:-13.5});
+
+  // Water cooler
+  addBox(.4,1.1,.4,-19,.55,2,sm(0x99ccee));
+  addBox(.5,.15,.5,-19,1.1,2,sm(0x3377aa));
+  COL.push({minX:-19.25,maxX:-18.75,minY:0,maxY:1.2,minZ:1.75,maxZ:2.25});
+
+  // Sofa (meeting area corner)
+  addBox(3,.5,1.2,16,.25,-16,sm(0x334455));
+  addBox(3,.8,.15,16,.65,-16.6,sm(0x334455));   // backrest
+  COL.push({minX:14.5,maxX:17.5,minY:0,maxY:.75,minZ:-17,maxZ:-15.4});
+
+  // Round meeting table + chairs
+  const tblGeo=new THREE.CylinderGeometry(2,2,.08,16);
+  const tbl=new THREE.Mesh(tblGeo,sm(0x7a5520)); tbl.position.set(-16,0.75,0); scene.add(tbl);
+  COL.push({minX:-18,maxX:-14,minY:0,maxY:.84,minZ:-2,maxZ:2});
+  for(let a=0;a<6;a++){
+    const ang=a/6*Math.PI*2, cx=-16+Math.cos(ang)*2.6, cz=Math.sin(ang)*2.6;
+    addBox(.6,.6,.6,cx,.3,cz,sm(0x223344));
+    COL.push({minX:cx-.35,maxX:cx+.35,minY:0,maxY:.65,minZ:cz-.35,maxZ:cz+.35});
+  }
+
+  // Pillars
+  const pilM=sm(0xcccccc);
+  [[-15,4,-15],[-15,4,15],[15,4,-15],[15,4,15]].forEach(([x,y,z])=>{
+    addBox(.8,8,.8,x,4,z,pilM);
+    COL.push({minX:x-.45,maxX:x+.45,minY:0,maxY:8,minZ:z-.45,maxZ:z+.45});
+  });
+
+  // Printer/copier stations
+  const printM=sm(0x555555);
+  [[19,1,-8],[19,1,8],[-19,1,-8],[-19,1,8]].forEach(([x,y,z])=>{
+    addBox(1.2,.8,.8,x,.4,z,printM);
+    addBox(1.2,.1,.8,x,.81,z,sm(0xeeeeee));
+    COL.push({minX:x-.65,maxX:x+.65,minY:0,maxY:.85,minZ:z-.45,maxX:z+.45});
+  });
+
+  // Window frames on walls (decorative)
+  const winM=sm(0xaaddff,0x88ccff,.2);
+  [[-20,4,-39.2],[-8,4,-39.2],[8,4,-39.2],[20,4,-39.2]].forEach(([x,y,z])=>{
+    addBox(4,3,.05,x,y,z,winM);
+  });
+
+  // PlayOJO posters on walls
+  const OJOL='/logo_owl.jpg', OJOL2='/logo_ojo.png';
+  wallPlane(OJOL2,6,3,0,5,-39.2,0);
+  wallPlane(OJOL,5,5,-18,4.5,-39.2,0);
+  wallPlane(OJOL2,5,5,18,4.5,-39.2,0);
+  wallPlane(OJOL,6,3,0,5,39.2,Math.PI);
+  wallPlane(OJOL2,5,4,-39.1,4.5,0,Math.PI/2);
+  wallPlane(OJOL,5,4,39.1,4.5,0,-Math.PI/2);
+
+  // Whiteboard with text
+  addBox(5,.05,2.5,-20,3.5,-39.1,sm(0xffffff));
+  addWallText('PPC TEAM GAME');
+}
+
+function addWallText(txt){
   const c=document.createElement('canvas'); c.width=512; c.height=112;
   const x=c.getContext('2d');
   x.clearRect(0,0,512,112); x.font='bold 68px Arial'; x.textAlign='center'; x.textBaseline='middle';
   x.shadowColor='#ff9900'; x.shadowBlur=18; x.fillStyle='#ff6600'; x.fillText(txt,256,56);
-  return new THREE.CanvasTexture(c);
+  const tex=new THREE.CanvasTexture(c);
+  [[0,2,-39.2,0],[0,2,39.2,Math.PI],[39.2,2,0,-Math.PI/2],[-39.2,2,0,Math.PI/2]].forEach(([x,y,z,r])=>{
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(12,2.6),
+      new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
+    m.position.set(x,y,z); m.rotation.y=r; scene.add(m);
+  });
 }
-const TXT=makeTex('PPC TEAM GAME');
-[[0,2,-39.2,0],[0,2,39.2,Math.PI],[39.2,2,0,-Math.PI/2],[-39.2,2,0,Math.PI/2]].forEach(([x,y,z,r])=>{
-  const m=new THREE.Mesh(new THREE.PlaneGeometry(12,2.6),
-    new THREE.MeshBasicMaterial({map:TXT,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
-  m.position.set(x,y,z); m.rotation.y=r; scene.add(m);
-});
 
 // ─────────────────────────────────────────────
 //  LASERS — simple Line-based, always visible
@@ -571,11 +731,12 @@ socket.on('joined',data=>{
   document.getElementById('ammo-res').textContent=data.player.reserve;
   document.getElementById('lobby').style.display='none';
   document.getElementById('hud').style.display='block';
-  // FFA — show player name + skin colour in badge
   const sk=SKINS[data.player.skin||0];
   document.getElementById('teambadge').textContent=data.player.name;
   document.getElementById('teambadge').style.color=sk.hex;
   if(data.roundActive)setTimer(data.roundTimer);
+  // Build selected map
+  if(selectedMap==='office') buildOffice(); else buildArena();
   inGame=true;
   document.getElementById('lockprompt').style.display='flex';
 });
@@ -793,8 +954,8 @@ document.getElementById('joinBtn').addEventListener('click',()=>{
   const bots=document.getElementById('botsCheck').checked;
   const btn=document.getElementById('joinBtn');
   btn.disabled=true; btn.textContent='CONNECTING...';
-  if(socket.connected) socket.emit('join',{name,withBots:bots,skin:selectedSkin});
-  else socket.once('connect',()=>socket.emit('join',{name,withBots:bots,skin:selectedSkin}));
+  if(socket.connected) socket.emit('join',{name,withBots:bots,skin:selectedSkin,map:selectedMap});
+  else socket.once('connect',()=>socket.emit('join',{name,withBots:bots,skin:selectedSkin,map:selectedMap}));
 });
 document.getElementById('nameInput').addEventListener('keydown',e=>{
   if(e.key==='Enter')document.getElementById('joinBtn').click();
