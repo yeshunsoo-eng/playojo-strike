@@ -407,9 +407,9 @@ io.on('connection', socket => {
     const boxDist = nearestBox(ox, oy, oz, dirX, dirY, dirZ);
     let hit = null, minDist = Infinity;
 
-    // FFA hit detection — shoot everyone except yourself
+    // FFA — everyone is a valid target except yourself
     Object.values(players).forEach(target => {
-      if (target.id === socket.id) return;
+      if (target.id === socket.id) return;  // can't shoot yourself
       if (!target.alive) return;
 
       const dx = target.x - ox;
