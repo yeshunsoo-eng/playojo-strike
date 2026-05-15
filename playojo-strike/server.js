@@ -48,6 +48,9 @@ const WEAPONS = {
 
 // Server-side hitboxes for the custom Office layout
 const COVER = [
+  // ── CENTRAL CORE ('X' BLOCK) ──
+  { w: 20, h: 16, d: 24, x: -8, y: 8, z: -2 },
+
   // Top Left Desks
   { w:6,  h:2, d:5, x:-41, y:1, z:-15 },
   { w:16, h:2, d:5, x:-30, y:1, z:-15 },
