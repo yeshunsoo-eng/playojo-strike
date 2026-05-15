@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PlayOJO Strike</title>
+<title>PlayOJO Strike - FFA</title>
 <style>
     /* ── RESET & BASE ── */
     *{margin:0;padding:0;box-sizing:border-box}
@@ -25,8 +25,7 @@
     #joinBtn{padding:12px 36px;font-size:1rem;font-weight:700;border:none;border-radius:6px;
       background:linear-gradient(90deg,#ff6600,#ff9900);color:#fff;cursor:pointer;
       letter-spacing:2px;text-transform:uppercase}
-    #joinBtn:disabled{opacity:.45;cursor:not-allowed}
-
+    
     /* Skin selector */
     #skin-title{font-size:.65rem;color:#888;letter-spacing:3px;text-transform:uppercase;margin-bottom:.6rem;align-self:flex-start}
     #skin-grid{display:flex;gap:9px;margin-bottom:1rem;flex-wrap:wrap;justify-content:center}
@@ -35,7 +34,6 @@
       background:#111;transition:.15s;gap:3px}
     .skin-opt span.ico{font-size:1.5rem;line-height:1}
     .skin-opt span.lbl{font-size:.45rem;color:#888;letter-spacing:1px;text-transform:uppercase}
-    .skin-opt:hover{border-color:#ff9900;transform:scale(1.06)}
     .skin-opt.sel{border-color:#ff6600;box-shadow:0 0 10px #ff660055}
 
     /* Controls panel */
@@ -59,15 +57,11 @@
     #dmg-flash{position:fixed;inset:0;pointer-events:none;z-index:18;opacity:0;
       background:rgba(200,0,0,0.45);transition:opacity .15s}
 
-    #topbar{position:absolute;top:0;left:50%;transform:translateX(-50%);
-      display:flex;flex-direction:column;align-items:center}
-    #scorebar{display:flex;align-items:stretch}
-    .sb-ojo{background:#b8920a;color:#fff;padding:5px 22px;font-size:1.35rem;font-weight:900;min-width:54px;text-align:center}
-    .sb-str{background:#2255aa;color:#fff;padding:5px 22px;font-size:1.35rem;font-weight:900;min-width:54px;text-align:center}
-    #timer{background:#111;color:#fff;padding:5px 20px;font-size:1.35rem;font-weight:900;
-      letter-spacing:4px;min-width:76px;text-align:center;border-left:1px solid #333;border-right:1px solid #333}
-    #roundlabel{background:#0009;padding:3px 18px;font-size:.62rem;letter-spacing:3px;color:#999;text-align:center}
-    #teambadge{padding:2px 14px;font-size:.62rem;letter-spacing:3px;text-align:center;background:#0008;color:#ffcc44}
+    /* FFA Top Bar */
+    #topbar{position:absolute;top:0;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+    #timer{background:#111;color:#fff;padding:8px 30px;font-size:1.6rem;font-weight:900;
+      letter-spacing:4px;text-align:center;border:1px solid #333;border-top:none;border-radius:0 0 8px 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5)}
+    #roundlabel{background:#0009;padding:3px 18px;font-size:.62rem;letter-spacing:3px;color:#999;text-align:center; border-radius: 0 0 4px 4px}
 
     #bl{position:absolute;bottom:0;left:0;padding:12px 16px;background:linear-gradient(to top,#000c,transparent)}
     #hp-num{font-size:2rem;font-weight:900;color:#fff;line-height:1}
@@ -100,23 +94,15 @@
     /* ── OVERLAYS ── */
     #lockprompt{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;
       align-items:center;justify-content:center;flex-direction:column;gap:.4rem;z-index:20;
-      pointer-events: none; /* FIX: allow clicks through to game */}
+      pointer-events: none;}
     #lockprompt p{color:#ff9900;font-size:1.5rem;font-weight:700;letter-spacing:3px}
-    #lockprompt small{color:#aaa;font-size:.75rem}
 
     #deathscreen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-      flex-direction:column;background:#0009;z-index:50}
-    #deathscreen h2{font-size:2.6rem;color:#ff2222;font-weight:900;letter-spacing:4px}
-    #deathscreen p{color:#aaa;margin-top:.3rem;font-size:.9rem}
-    #respawn-timer{font-size:1.4rem;color:#ff6600;margin-top:.7rem;font-weight:700;letter-spacing:2px}
+      flex-direction:column;background:rgba(0,0,0,0.8);z-index:50}
+    #deathscreen h2{font-size:3rem;color:#ff2222;font-weight:900;letter-spacing:4px}
+    #respawn-timer{font-size:1.4rem;color:#ff6600;margin-top:1rem;font-weight:700;letter-spacing:2px}
 
-    #matchover{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-      flex-direction:column;background:#000c;z-index:60}
-    #matchover h2{font-size:2.2rem;font-weight:900;margin-bottom:.7rem}
-    #matchover button{margin-top:1.2rem;padding:10px 30px;background:#ff6600;border:none;
-      border-radius:6px;color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;letter-spacing:2px}
-
-    #scoreboard{position:fixed;inset:0;background:#000d;display:none;
+    #scoreboard{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;
       align-items:center;justify-content:center;z-index:30}
     #scoreboard.show{display:flex}
     #sb-wrap{width:660px;background:#111;border:1px solid #2a2a2a}
@@ -126,7 +112,18 @@
     #sb-table{width:100%;border-collapse:collapse}
     #sb-table th{background:#0d0d0d;color:#666;padding:6px 14px;font-size:.65rem;
       letter-spacing:3px;text-transform:uppercase;border-bottom:1px solid #1e1e1e}
-    #sb-table td{padding:6px 14px;border-bottom:1px solid #191919;font-size:.78rem;color:#bbb}
+    #sb-table td{padding:6px 14px;border-bottom:1px solid #191919;font-size:.78rem;color:#bbb;text-align:center}
+    #sb-table td:first-child{text-align:left}
+
+    /* Sniper scope */
+    #scope-overlay{position:fixed;inset:0;display:none;z-index:15;pointer-events:none}
+    #scope-overlay.on{display:block}
+    #scope-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      width:280px;height:280px;border-radius:50%;border:3px solid #111;
+      box-shadow:0 0 0 9999px rgba(0,0,0,.88)}
+    #scope-h{position:absolute;top:50%;left:0;right:0;height:1px;background:#33ff66;opacity:.7;transform:translateY(-50%)}
+    #scope-v{position:absolute;left:50%;top:0;bottom:0;width:1px;background:#33ff66;opacity:.7;transform:translateX(-50%)}
+    #scope-dot{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:#33ff66;transform:translate(-50%,-50%)}
 
     canvas{display:block;width:100vw;height:100vh}
 </style>
@@ -137,7 +134,7 @@
 <div id="lobby">
   <div id="lobby-left">
     <img src="/logo_ojo.png" alt="PlayOJO">
-    <div class="sub">PPC Strike — Office</div>
+    <div class="sub">PPC Strike — FFA</div>
     <input id="nameInput" placeholder="Enter callsign..." maxlength="16" autocomplete="off">
     <div id="skin-title">Choose your skin</div>
     <div id="skin-grid">
@@ -157,8 +154,15 @@
       <div class="ctrl-row"><span class="ctrl-key">W A S D</span><span class="ctrl-desc">Move</span></div>
       <div class="ctrl-row"><span class="ctrl-key">Mouse</span><span class="ctrl-desc">Aim / Look</span></div>
       <div class="ctrl-row"><span class="ctrl-key">L‑Click</span><span class="ctrl-desc">Shoot</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">R‑Click</span><span class="ctrl-desc">Scope (Sniper)</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">R</span><span class="ctrl-desc">Reload</span></div>
       <div class="ctrl-row"><span class="ctrl-key">Space</span><span class="ctrl-desc">Jump</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">Shift</span><span class="ctrl-desc">Sprint</span></div>
       <div class="ctrl-row"><span class="ctrl-key">Tab</span><span class="ctrl-desc">Scoreboard</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">1</span><span class="ctrl-desc">Plasma Rifle</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">2</span><span class="ctrl-desc">Ion Pistol</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">3</span><span class="ctrl-desc">Void Sniper</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">ESC</span><span class="ctrl-desc">Release Mouse</span></div>
     </div>
   </div>
 </div>
@@ -167,20 +171,16 @@
   <div id="xhair"><div class="dot"></div></div>
   <div id="hitfx">✕ ✕</div>
   <div id="dmg-flash"></div>
+  
   <div id="topbar">
-    <div id="scorebar">
-      <div class="sb-ojo" id="score-ojo">0</div>
-      <div id="timer">0:00</div>
-      <div class="sb-str" id="score-str">0</div>
-    </div>
-    <div id="roundlabel">ROUND <span id="round-num">1</span></div>
-    <div id="teambadge">—</div>
+    <div id="timer">0:00</div>
+    <div id="roundlabel">FREE FOR ALL</div>
   </div>
+
   <div id="kfeed"></div>
   <div id="bl">
     <div id="hp-num">100</div>
     <div id="hp-bar"><div id="hp-fill"></div></div>
-    <div id="armor-row">ARMOR 100</div>
   </div>
   <div id="br">
     <div id="slot-label">PRIMARY</div>
@@ -191,11 +191,33 @@
     </div>
     <div id="wep-name">PLASMA RIFLE</div>
   </div>
+  <div id="wepbar">
+    <div class="wbtn on" data-w="rifle">1 RIFLE</div>
+    <div class="wbtn" data-w="pistol">2 PISTOL</div>
+    <div class="wbtn" data-w="sniper">3 SNIPER</div>
+  </div>
 </div>
 
-<div id="lockprompt"><p>🖱 CLICK TO CAPTURE MOUSE</p><small>ESC to release</small></div>
+<div id="lockprompt"><p>🖱 CLICK TO CAPTURE MOUSE</p></div>
 <div id="deathscreen">
   <h2>ELIMINATED</h2>
+  <div id="respawn-timer">Respawning...</div>
+</div>
+
+<div id="scoreboard">
+  <div id="sb-wrap">
+    <div id="sb-head"><span>SCOREBOARD (FFA)</span><span>HOLD TAB TO VIEW</span></div>
+    <table id="sb-table">
+      <thead><tr><th>PLAYER</th><th>KILLS</th><th>DEATHS</th><th>K/D</th></tr></thead>
+      <tbody id="sb-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="scope-overlay">
+  <div id="scope-ring">
+    <div id="scope-h"></div><div id="scope-v"></div><div id="scope-dot"></div>
+  </div>
 </div>
 
 <canvas id="c"></canvas>
@@ -223,8 +245,10 @@ const socket=io();
 let myId=null,alive=true,health=100,inGame=false,pointerLocked=false,shooting=false,lastShot=0;
 let curWeapon='rifle',scoped=false,remotePlayers={},onGround=true;
 const vel={x:0,y:0,z:0};
-let pitch=0,yaw=0,sendT=0;
+let pitch=0,yaw=0;
 const WRATE={rifle:150,pistol:400,sniper:1200}, NORMAL_FOV=75,SCOPE_FOV=15;
+const WLABEL={rifle:'PLASMA RIFLE',pistol:'ION PISTOL',sniper:'VOID SNIPER'};
+const WSLOT={rifle:'PRIMARY',pistol:'SECONDARY',sniper:'SNIPER'};
 const G=-20,JV=8,WK=7,RN=11,PR=0.35,PH=1.8;
 
 const canvas=document.getElementById('c');
@@ -255,20 +279,17 @@ function box(w,h,d,x,y,z,mat){
 }
 function addCol(x,y,z,w,h,d){COL.push({minX:x-w/2,maxX:x+w/2,minY:y-h/2,maxY:y+h/2,minZ:z-d/2,maxZ:z+d/2});}
 
-// Floor/Walls
-box(80,0.15,80, 0,0,0, sm(0x8a8878));
-box(80,0.25,80, 0,8,0, sm(0xf0ede6));
+box(80,0.15,80, 0,0,0, sm(0x8a8878)); // Floor
+box(80,0.25,80, 0,8,0, sm(0xf0ede6)); // Ceil
 box(80,8,0.25, 0,4,-40, sm(0xf2efe8)); box(80,8,0.25, 0,4,40, sm(0xf2efe8));
 box(0.25,8,80, -40,4,0, sm(0xf2efe8)); box(0.25,8,80,40,4,0, sm(0xf2efe8));
 
-// Pillars
 const pillarM=sm(0xe8e4dc);
 [[-20,-20],[-20,20],[20,-20],[20,20]].forEach(([x,z])=>{
-  box(1.1,8,1.1, x,4,z, pillarM);
-  addCol(x,4,z, 1.1,8,1.1);
+  box(1.1,8,1.1, x,4,z, pillarM); addCol(x,4,z, 1.1,8,1.1);
 });
 
-// ─── LOGOS & BANNERS ───
+// Wall Banners
 const TL=new THREE.TextureLoader();
 function createBanner(url,w,h,x,y,z,ry){
   TL.load(url,tex=>{
@@ -277,29 +298,113 @@ function createBanner(url,w,h,x,y,z,ry){
     m.position.set(x,y,z); m.rotation.y=ry; scene.add(m);
   });
 }
-createBanner('logo_ojo.png', 8, 4, 0, 4, -39.8, 0); // North wall
-createBanner('logo_owl.jpg', 6, 6, 39.8, 4, 0, -Math.PI/2); // East wall
-createBanner('logo_owl.jpg', 6, 6, -39.8, 4, 0, Math.PI/2); // West wall
+createBanner('logo_ojo.png', 8, 4, 0, 4, -39.8, 0); 
+createBanner('logo_owl.jpg', 6, 6, 39.8, 4, 0, -Math.PI/2); 
+createBanner('logo_owl.jpg', 6, 6, -39.8, 4, 0, Math.PI/2); 
 
-// Players / Laser Logic
-function spawnLaser(ox,oy,oz,dx,dy,dz,col){
-  const pts=[new THREE.Vector3(0,0,0),new THREE.Vector3(dx*6,dy*6,dz*6)];
-  const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:col}));
-  line.position.set(ox,oy,oz); scene.add(line);
-  setTimeout(()=>scene.remove(line),80);
+// Player Meshes
+const pMeshes={};
+function makePMesh(name,skinIdx){
+  const sk=SKINS[skinIdx]||SKINS[0];
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(0.6,1,0.4), new THREE.MeshStandardMaterial({color:sk.col}));
+  body.position.y=0.5; g.add(body);
+  const head=new THREE.Mesh(new THREE.BoxGeometry(0.45,0.45,0.45), new THREE.MeshStandardMaterial({color:0xffcc99}));
+  head.position.y=1.25; g.add(head);
+  scene.add(g); return g;
 }
 
-// ─── LOGIC ───
+// ─── LOGIC & INPUT ───
 const keys={};
-window.addEventListener('keydown',e=>keys[e.code]=true);
-window.addEventListener('keyup',e=>keys[e.code]=false);
 
+// KEYBOARD
+window.addEventListener('keydown',e=>{
+    keys[e.code]=true;
+    if(!inGame) return;
+    if(e.code==='KeyR') socket.emit('reload');
+    if(e.code==='Digit1') sw('rifle');
+    if(e.code==='Digit2') sw('pistol');
+    if(e.code==='Digit3') sw('sniper');
+    if(e.code==='Tab'){ e.preventDefault(); showSB(true); }
+    if(e.code==='Space' && onGround && alive){ vel.y=JV; onGround=false; }
+});
+window.addEventListener('keyup',e=>{
+    keys[e.code]=false;
+    if(e.code==='Tab') showSB(false);
+});
+
+// MOUSE CLICKING (Shooting & Scoping)
+document.addEventListener('mousedown',e=>{
+    if(!inGame || !alive || !pointerLocked) return;
+    if(e.button===0) shooting=true;
+    if(e.button===2 && curWeapon==='sniper'){
+        scoped=true; cam.fov=SCOPE_FOV; cam.updateProjectionMatrix();
+        document.getElementById('scope-overlay').classList.add('on');
+        document.getElementById('xhair').style.display='none';
+    }
+});
+document.addEventListener('mouseup',e=>{
+    if(e.button===0) shooting=false;
+    if(e.button===2){
+        scoped=false; cam.fov=NORMAL_FOV; cam.updateProjectionMatrix();
+        document.getElementById('scope-overlay').classList.remove('on');
+        document.getElementById('xhair').style.display='block';
+    }
+});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+
+// MOUSE MOVEMENT
+document.addEventListener('mousemove',e=>{
+    if(!pointerLocked || !inGame || !alive) return;
+    yaw-=e.movementX*0.002; pitch-=e.movementY*0.002;
+    pitch=Math.max(-1.5,Math.min(1.5,pitch));
+});
+
+// POINTER LOCK
+canvas.addEventListener('click', () => { if(inGame) canvas.requestPointerLock(); });
 document.addEventListener('pointerlockchange', () => {
     pointerLocked = (document.pointerLockElement === canvas);
     if (inGame && alive) document.getElementById('lockprompt').style.display = pointerLocked ? 'none' : 'flex';
 });
 
-canvas.addEventListener('click', () => { if(inGame) canvas.requestPointerLock(); });
+// WEAPON SWITCH
+function sw(w){
+  if(scoped && w!=='sniper'){
+    scoped=false; cam.fov=NORMAL_FOV; cam.updateProjectionMatrix();
+    document.getElementById('scope-overlay').classList.remove('on');
+    document.getElementById('xhair').style.display='block';
+  }
+  curWeapon=w; socket.emit('switchWeapon',{weapon:w});
+  document.querySelectorAll('.wbtn').forEach(b=>b.classList.toggle('on',b.dataset.w===w));
+  document.getElementById('wep-name').textContent=WLABEL[w];
+  document.getElementById('slot-label').textContent=WSLOT[w];
+}
+
+// SCOREBOARD (FFA)
+function showSB(on){
+  const sb=document.getElementById('scoreboard');
+  if(on){
+    sb.classList.add('show');
+    const all=Object.values(remotePlayers).sort((a,b)=>b.kills-a.kills);
+    document.getElementById('sb-body').innerHTML=all.map(p=>
+      `<tr><td>${p.name}</td><td>${p.kills}</td><td>${p.deaths}</td><td>${(p.kills/(p.deaths||1)).toFixed(1)}</td></tr>`
+    ).join('');
+  } else sb.classList.remove('show');
+}
+
+// LASER VISUALS
+const lasers=[];
+function spawnLaser(ox,oy,oz,dx,dy,dz,col){
+  const pts=[new THREE.Vector3(0,0,0),new THREE.Vector3(dx*6,dy*6,dz*6)];
+  const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:col}));
+  line.position.set(ox,oy,oz); scene.add(line);
+  lasers.push({m:line,dx,dy,dz,life:0.28});
+}
+
+// ─── SOCKET LISTENERS ───
+document.getElementById('joinBtn').addEventListener('click',()=>{
+  socket.emit('join',{name:document.getElementById('nameInput').value, skin:selectedSkin, withBots:document.getElementById('botsCheck').checked});
+});
 
 socket.on('joined', data => {
     myId = data.id; inGame = true; alive = true;
@@ -308,9 +413,77 @@ socket.on('joined', data => {
     document.getElementById('lockprompt').style.display = 'none';
 });
 
+socket.on('playerList',data=>{
+  remotePlayers=data;
+  Object.keys(pMeshes).forEach(id=>{if(!data[id]){scene.remove(pMeshes[id]);delete pMeshes[id];}});
+  Object.entries(data).forEach(([id,p])=>{
+    if(id===myId)return;
+    if(!pMeshes[id])pMeshes[id]=makePMesh(p.name,p.skin);
+    pMeshes[id].position.set(p.x,p.y,p.z);
+    pMeshes[id].rotation.y=p.rotY;
+    pMeshes[id].visible=p.alive;
+  });
+});
+
+socket.on('playerMoved',({id,x,y,z,rotY})=>{
+  if(id===myId)return;
+  if(pMeshes[id]){pMeshes[id].position.set(x,y,z);pMeshes[id].rotation.y=rotY;}
+});
+
+socket.on('playerShot',({id,x,y,z,dx,dy,dz,skin})=>{
+  if(id===myId)return;
+  spawnLaser(x,y+1,z,dx,dy,dz,(SKINS[skin]||SKINS[0]).laser);
+});
+
+socket.on('playerHit',({id,health:hp})=>{
+  if(id===myId){
+    health=hp;
+    document.getElementById('hp-num').textContent=health;
+    document.getElementById('hp-fill').style.width=health+'%';
+    const fl=document.getElementById('dmg-flash');
+    fl.style.opacity='1';setTimeout(()=>fl.style.opacity='0',200);
+  }
+});
+
+socket.on('playerKilled',({id,killFeed})=>{
+  if(id===myId){ alive=false; document.getElementById('deathscreen').style.display='flex'; }
+  if(pMeshes[id]) pMeshes[id].visible=false;
+  document.getElementById('kfeed').innerHTML=killFeed.slice(0,5).map(k=>`<div class="kfe"><span class="kfk">${k.killer}</span> [${k.weapon}] <span class="kfv">${k.victim}</span></div>`).join('');
+});
+
+socket.on('playerRespawned',({id,x,y,z})=>{
+  if(id===myId){
+    alive=true; health=100;
+    cam.position.set(x,1.7,z);
+    document.getElementById('hp-num').textContent='100';
+    document.getElementById('hp-fill').style.width='100%';
+    document.getElementById('deathscreen').style.display='none';
+  }
+  if(pMeshes[id])pMeshes[id].visible=true;
+});
+
+socket.on('ammoUpdate',({ammo,reserve})=>{
+  document.getElementById('ammo-cur').textContent=ammo;
+  document.getElementById('ammo-res').textContent=reserve;
+});
+
+socket.on('timerUpdate',sec=>{
+  document.getElementById('timer').textContent=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
+});
+
+// ─── GAME LOOP ───
+const clock=new THREE.Clock();
 function animate(){
   requestAnimationFrame(animate);
-  const dt=0.016;
+  const dt=Math.min(clock.getDelta(),0.05);
+
+  // Move Lasers
+  for(let i=lasers.length-1;i>=0;i--){
+    const l=lasers[i];l.life-=dt;
+    l.m.position.x+=l.dx*20*dt; l.m.position.y+=l.dy*20*dt; l.m.position.z+=l.dz*20*dt;
+    if(l.life<=0){scene.remove(l.m);lasers.splice(i,1);}
+  }
+
   if(inGame && alive){
     vel.y+=G*dt;
     const fv=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
@@ -319,27 +492,36 @@ function animate(){
     if(keys['KeyW'])md.add(fv); if(keys['KeyS'])md.sub(fv);
     if(keys['KeyA'])md.sub(rv); if(keys['KeyD'])md.add(rv);
     if(md.lengthSq()>0)md.normalize();
-    vel.x=md.x*WK; vel.z=md.z*WK;
-    cam.position.x+=vel.x*dt; cam.position.z+=vel.z*dt; cam.position.y+=vel.y*dt;
-    if(cam.position.y<1.7){cam.position.y=1.7; vel.y=0;}
-    
-    // Mouse look
-    document.addEventListener('mousemove',e=>{
-      if(!pointerLocked)return;
-      yaw-=e.movementX*0.002; pitch-=e.movementY*0.002;
-      pitch=Math.max(-1.5,Math.min(1.5,pitch));
-    },{once:true});
-    cam.rotation.set(pitch,yaw,0,'YXZ');
 
+    const spd=(keys['ShiftLeft'])?RN:WK;
+    vel.x=md.x*spd; vel.z=md.z*spd;
+    
+    // Simplistic collision block
+    cam.position.x+=vel.x*dt; cam.position.z+=vel.z*dt; cam.position.y+=vel.y*dt;
+    if(cam.position.y<1.7){cam.position.y=1.7; vel.y=0; onGround=true;}
+    
+    cam.rotation.set(pitch,yaw,0,'YXZ');
     socket.emit('move',{x:cam.position.x, y:cam.position.y-1.7, z:cam.position.z, rotY:yaw});
+
+    // Shooting Logic
+    if(shooting && pointerLocked){
+      const now=Date.now();
+      if(now-lastShot >= WRATE[curWeapon]){
+        lastShot=now;
+        const euler = new THREE.Euler(pitch, yaw, 0, 'YXZ');
+        const dir = new THREE.Vector3(0,0,-1).applyEuler(euler).normalize();
+        
+        spawnLaser(cam.position.x, cam.position.y-0.3, cam.position.z, dir.x, dir.y, dir.z, SKINS[selectedSkin].laser);
+        socket.emit('shoot',{dirX:dir.x, dirY:dir.y, dirZ:dir.z});
+        
+        // Semi-auto logic
+        if(curWeapon !== 'rifle') shooting=false;
+      }
+    }
   }
   renderer.render(scene,cam);
 }
 animate();
-
-document.getElementById('joinBtn').addEventListener('click',()=>{
-  socket.emit('join',{name:document.getElementById('nameInput').value, skin:selectedSkin, withBots:document.getElementById('botsCheck').checked});
-});
 </script>
 </body>
 </html>
