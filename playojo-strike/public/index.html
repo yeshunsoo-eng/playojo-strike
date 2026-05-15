@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PlayOJO Strike — Office</title>
+<title>PlayOJO Strike</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#111;color:#fff;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden}
@@ -150,6 +150,7 @@ canvas{display:block;width:100vw;height:100vh}
 </head>
 <body>
 
+<!-- LOBBY -->
 <div id="lobby">
   <div id="lobby-left">
     <img src="/logo_ojo.png" alt="PlayOJO">
@@ -181,11 +182,12 @@ canvas{display:block;width:100vw;height:100vh}
       <div class="ctrl-row"><span class="ctrl-key">1</span><span class="ctrl-desc">Plasma Rifle</span></div>
       <div class="ctrl-row"><span class="ctrl-key">2</span><span class="ctrl-desc">Ion Pistol</span></div>
       <div class="ctrl-row"><span class="ctrl-key">3</span><span class="ctrl-desc">Void Sniper</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">ESC</span><span class="ctrl-desc">Release Mouse</span></div>
+      <div class="ctrl-key-row"><span class="ctrl-key">ESC</span><span class="ctrl-desc">Release Mouse</span></div>
     </div>
   </div>
 </div>
 
+<!-- HUD -->
 <div id="hud">
   <div id="xhair"><div class="dot"></div></div>
   <div id="hitfx">✕ ✕</div>
@@ -221,6 +223,7 @@ canvas{display:block;width:100vw;height:100vh}
   </div>
 </div>
 
+<!-- OVERLAYS -->
 <div id="lockprompt"><p>🖱 CLICK TO CAPTURE MOUSE</p><small>ESC to release</small></div>
 <div id="deathscreen">
   <h2>ELIMINATED</h2><p>You were taken down</p>
@@ -301,19 +304,20 @@ const cam=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,150);
 cam.position.set(0,1.7,0);
 window.addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();});
 
-// ─── LIGHTING — optimized grid ──────
+// ─── LIGHTING — office warm fluorescent ──────
 scene.add(new THREE.AmbientLight(0xfff8ee,0.9));
 
-// Reduced point lights for performance
-for(let x=-20;x<=20;x+=20){
-  for(let z=-20;z<=20;z+=20){
-    const l=new THREE.PointLight(0xfffde8,0.7,25);
-    l.position.set(x,7.6,z); l.castShadow=false; scene.add(l);
+// Main overhead lights in a grid
+for(let x=-20;x<=20;x+=10){
+  for(let z=-20;z<=20;z+=10){
+    const l=new THREE.PointLight(0xfffde8,0.9,18);
+    l.position.set(x,7.6,z); l.castShadow=true; scene.add(l);
   }
 }
+// Warm fill from windows (south wall)
 const sunLight=new THREE.DirectionalLight(0xfff0cc,0.7);
 sunLight.position.set(15,10,35); sunLight.castShadow=true;
-sunLight.shadow.mapSize.width=1024; sunLight.shadow.mapSize.height=1024;
+sunLight.shadow.mapSize.width=2048; sunLight.shadow.mapSize.height=2048;
 scene.add(sunLight);
 
 // ─── HELPERS ─────────────────────────────────
@@ -332,37 +336,309 @@ function col(x,y,z,w,h,d){COL.push({minX:x-w/2,maxX:x+w/2,minY:y-h/2,maxY:y+h/2,
 
 // ─── OFFICE MAP ───────────────────────────────
 
-// --- Floor ---
+// --- Floor: grey carpet tiles with grout lines ---
 const floorM=sm(0x8a8878,0,0,0.95);
 box(80,0.15,80, 0,0,0, floorM);
+// Carpet tile lines
+for(let i=-38;i<=38;i+=2){
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-39,0.08,i),new THREE.Vector3(39,0.08,i)]);
+  scene.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0x777066,transparent:true,opacity:0.35})));
+  const g2=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(i,0.08,-39),new THREE.Vector3(i,0.08,39)]);
+  scene.add(new THREE.Line(g2,new THREE.LineBasicMaterial({color:0x777066,transparent:true,opacity:0.35})));
+}
 
 // --- Ceiling ---
 const ceilM=sm(0xf0ede6,0,0,1.0);
 box(80,0.25,80, 0,8,0, ceilM);
 
-// --- Walls ---
+// Ceiling tiles grid lines
+for(let i=-38;i<=38;i+=2){
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-39,7.74,i),new THREE.Vector3(39,7.74,i)]);
+  scene.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0xbbbaaa,transparent:true,opacity:0.5})));
+  const g2=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(i,7.74,-39),new THREE.Vector3(i,7.74,39)]);
+  scene.add(new THREE.Line(g2,new THREE.LineBasicMaterial({color:0xbbbaaa,transparent:true,opacity:0.5})));
+}
+
+// --- Fluorescent light fixtures on ceiling ---
+const lightFixM=sm(0xfffde0,0xfffde0,1.0);
+const lightFrameM=smMetal(0xaaaaaa);
+for(let x=-20;x<=20;x+=10){
+  for(let z=-20;z<=20;z+=10){
+    box(2.4,0.06,0.4, x,7.73,z, lightFrameM);
+    box(2.2,0.04,0.3, x,7.72,z, lightFixM, false);
+  }
+}
+
+// --- Walls: off-white painted drywall ---
 const wallM=sm(0xf2efe8,0,0,0.95);
-box(80,8,0.25, 0,4,-40, wallM); col(0,4,-40, 80,8,0.3);
-box(80,8,0.25, 0,4, 40, wallM); col(0,4,40, 80,8,0.3);
-box(0.25,8,80, -40,4,0, wallM); col(-40,4,0, 0.3,8,80);
-box(0.25,8,80,  40,4,0, wallM); col(40,4,0, 0.3,8,80);
+// North/South
+box(80,8,0.25, 0,4,-40, wallM);
+box(80,8,0.25, 0,4, 40, wallM);
+// East/West
+box(0.25,8,80, -40,4,0, wallM);
+box(0.25,8,80,  40,4,0, wallM);
+
+// Wall baseboard trim
+const baseM=sm(0xd0ccc4,0,0,0.6);
+[[-40,0.1,0,0.15,0.2,80],[40,0.1,0,0.15,0.2,80],[0,0.1,-40,80,0.2,0.15],[0,0.1,40,80,0.2,0.15]]
+  .forEach(([x,y,z,w,h,d])=>box(w,h,d,x,y,z,baseM));
+
+// Wall crown molding
+const moldM=sm(0xe8e4dc,0,0,0.7);
+[[-40,7.8,0,0.1,0.3,80],[40,7.8,0,0.1,0.3,80],[0,7.8,-40,80,0.3,0.1],[0,7.8,40,80,0.3,0.1]]
+  .forEach(([x,y,z,w,h,d])=>box(w,h,d,x,y,z,moldM));
+
+// --- Windows on south wall (facing in) ---
+const glassMat=new THREE.MeshStandardMaterial({color:0xaad4ee,transparent:true,opacity:0.35,roughness:0,metalness:0.1,side:THREE.DoubleSide});
+const frameM=smMetal(0x888888);
+[[-24,4],[-12,4],[0,4],[12,4],[24,4]].forEach(([x,y])=>{
+  box(4,3,0.08, x,y,39.6, glassMat, false);
+  box(4.3,3.3,0.12, x,y,39.5, frameM, false); // outer frame
+  box(0.1,3,0.12, x,y,39.5, frameM, false);   // mullion
+  box(4.3,0.1,0.12, x,y+0.4,39.5, frameM, false); // transom
+  // Window sill
+  box(4.4,0.1,0.3, x,y-1.35,39.4, sm(0xdddad2), false);
+});
 
 // --- Structural pillars ---
 const pillarM=sm(0xe8e4dc,0,0,0.9);
+const pillarAcc=sm(0xc8b89a,0,0,0.8);
 [[-20,-20],[-20,20],[20,-20],[20,20],[0,-20],[0,20],[-20,0],[20,0]].forEach(([x,z])=>{
-  box(1,8,1, x,4,z, pillarM); col(x,4,z, 1.1,8,1.1);
+  box(1,8,1, x,4,z, pillarM);
+  box(1.15,0.3,1.15, x,0.15,z, pillarAcc); // base
+  box(1.15,0.3,1.15, x,7.85,z, pillarAcc); // cap
+  col(x,4,z, 1.1,8,1.1);
 });
 
-// --- Desk clusters ---
+// --- Reception desk (north, back of office) ---
+const deskWoodM=sm(0x7a5c2e,0,0,0.6);
+const deskTopM=sm(0x9a7c4e,0,0,0.4);
+box(12,1.1,0.4, 0,0.55,-30, deskWoodM); // front panel
+box(12,0.08,2,  0,1.1,-29.1,deskTopM);  // counter top
+box(5,2,1.8, -3.5,1,-28.2,  deskWoodM); // back section
+box(5,2,1.8,  3.5,1,-28.2,  deskWoodM);
+box(11.5,2,0.08,-0.25,1,-27.3, sm(0x6a4c1e)); // back wall panel
+col(0,0.55,-30, 12,1.1,0.5);
+col(-3.5,1,-28.2, 5,2,2);
+col(3.5,1,-28.2, 5,2,2);
+
+// Computers on reception desk
+[[-5,1.15,-28.9],[-1,1.15,-28.9],[3,1.15,-28.9]].forEach(([x,y,z])=>{
+  box(0.6,0.45,0.04, x,y+0.35,z, sm(0x222222,0x001133,0.2)); // screen
+  box(0.1,0.3,0.1,   x,y+0.15,z+0.1, smMetal(0x444444));    // stand
+  box(0.5,0.03,0.35, x,y,z+0.2, smMetal(0x555555));          // keyboard
+});
+
+// --- Office desk clusters (4 pods of 4 desks) ---
 const podM=sm(0x8c7a60,0,0,0.5);
-function makeDesk(cx,cz){
+const legMat=smMetal(0x666666);
+const monM=sm(0x1a1a1a,0x001122,0.15);
+const kbM=smMetal(0x888888);
+
+function makeDesk(cx,cz,rot){
+  // Desk surface
   box(1.6,0.05,0.8, cx,0.73,cz, podM);
-  col(cx,0.38,cz, 1.65,0.85,0.85); // High enough collider for PH=1.8
+  // Legs
+  [[-0.72,0.35,-0.36],[0.72,0.35,-0.36],[-0.72,0.35,0.36],[0.72,0.35,0.36]].forEach(([dx,dy,dz])=>{
+    box(0.06,0.7,0.06, cx+dx,dy,cz+dz, legMat);
+  });
+  // Monitor
+  box(0.03,0.38,0.52, cx,0.73+0.42,cz-0.28, monM);
+  box(0.04,0.04,0.08, cx,0.73+0.04,cz-0.28, legMat);
+  // Keyboard
+  box(0.42,0.02,0.16, cx,0.76,cz+0.05, kbM);
+  // Mouse
+  box(0.07,0.02,0.1, cx+0.28,0.76,cz+0.05, sm(0x333333));
+  // Collider
+  col(cx,0.35,cz, 1.65,0.78,0.85);
 }
-// Pods
-[[-12, 8],[-9, 8],[-12,11],[-9,11],[ 9, 8],[12, 8],[ 9,11],[12,11],
- [-12,-8],[-9,-8],[-12,-11],[-9,-11],[ 9,-8],[12,-8],[ 9,-11],[12,-11],
- [-2, 0],[2, 0],[-2, 3],[2, 3],[-2,-3],[2,-3]].forEach(([x,z])=>makeDesk(x,z));
+
+// Pod 1 — top-left area
+makeDesk(-12, 8,0); makeDesk(-9, 8,0); makeDesk(-12,11,0); makeDesk(-9,11,0);
+// Pod 2 — top-right area
+makeDesk( 9, 8,0); makeDesk(12, 8,0); makeDesk( 9,11,0); makeDesk(12,11,0);
+// Pod 3 — bottom-left area
+makeDesk(-12,-8,0); makeDesk(-9,-8,0); makeDesk(-12,-11,0); makeDesk(-9,-11,0);
+// Pod 4 — bottom-right area
+makeDesk( 9,-8,0); makeDesk(12,-8,0); makeDesk( 9,-11,0); makeDesk(12,-11,0);
+// Centre row
+makeDesk(-2, 0,0); makeDesk(2, 0,0); makeDesk(-2, 3,0); makeDesk(2, 3,0);
+makeDesk(-2,-3,0); makeDesk(2,-3,0);
+
+// --- Cubicle dividers ---
+const divM=sm(0x8899aa,0,0,0.7);
+const divTopM=sm(0xaabbc0,0,0,0.5);
+function divider(x,y,z,w,h,d){
+  box(w,h,d, x,y,z, divM);
+  box(w+0.04,0.04,d+0.04, x,y+h/2,z, divTopM); // cap strip
+  col(x,y,z,w+0.05,h,d+0.05);
+}
+// Between pods
+divider(-7.2, 0.75, 9.5,  0.08,1.5,5);
+divider(-7.2, 0.75,-9.5,  0.08,1.5,5);
+divider( 7.2, 0.75, 9.5,  0.08,1.5,5);
+divider( 7.2, 0.75,-9.5,  0.08,1.5,5);
+divider(-10.5,0.75, 6.5,  5,1.5,0.08);
+divider(-10.5,0.75,-6.5,  5,1.5,0.08);
+divider( 10.5,0.75, 6.5,  5,1.5,0.08);
+divider( 10.5,0.75,-6.5,  5,1.5,0.08);
+divider( 0,   0.75, 4.8,  5,1.5,0.08);
+divider( 0,   0.75,-4.8,  5,1.5,0.08);
+
+// --- Meeting room (glass walls, north-east corner) ---
+const glassWallM=new THREE.MeshStandardMaterial({color:0xc8e0f0,transparent:true,opacity:0.28,roughness:0,metalness:0.05,side:THREE.DoubleSide});
+const mFrameM=smMetal(0x999999);
+// Glass walls
+box(0.06,3,12, 28,1.5,21,  glassWallM,false);
+box(12,3,0.06, 34,1.5,27,  glassWallM,false);
+box(12,3,0.06, 34,1.5,15,  glassWallM,false);
+// Frames
+[28,1.5,27,0.1,3.1,0.1],[28,1.5,15,0.1,3.1,0.1],[40,1.5,27,0.1,3.1,0.1],[40,1.5,15,0.1,3.1,0.1]
+  .forEach(([x,y,z,w,h,d])=>box(w,h,d,x,y,z,mFrameM));
+box(0.1,3.1,12.1, 28,1.5,21, mFrameM,false);
+// Meeting table
+const mtblGeo=new THREE.CylinderGeometry(2.2,2.2,0.08,24);
+const mtbl=new THREE.Mesh(mtblGeo,sm(0x6b4820,0,0,0.4)); mtbl.position.set(34,0.78,21); scene.add(mtbl);
+mtbl.castShadow=true;
+col(34,0.78,21, 4.5,0.1,4.5);
+// Meeting chairs
+for(let a=0;a<8;a++){
+  const ang=a/8*Math.PI*2, cx=34+Math.cos(ang)*3.1, cz=21+Math.sin(ang)*3.1;
+  box(0.5,0.55,0.5, cx,0.28,cz, sm(0x334455)); // seat
+  box(0.5,0.6,0.06, cx,0.6,cz-0.22, sm(0x2a3a48)); // back
+  col(cx,0.3,cz, 0.55,0.6,0.55);
+}
+// "MEETING ROOM" sign
+const signC=document.createElement('canvas'); signC.width=256; signC.height=64;
+const sctx=signC.getContext('2d');
+sctx.fillStyle='#1a3a5a'; sctx.fillRect(0,0,256,64);
+sctx.font='bold 24px Arial'; sctx.fillStyle='#ffffff'; sctx.textAlign='center'; sctx.textBaseline='middle';
+sctx.fillText('MEETING ROOM',128,32);
+const signTex=new THREE.CanvasTexture(signC);
+const signMesh=new THREE.Mesh(new THREE.PlaneGeometry(1.8,0.45),new THREE.MeshBasicMaterial({map:signTex}));
+signMesh.position.set(28.1,2.6,21); signMesh.rotation.y=Math.PI/2; scene.add(signMesh);
+
+// --- Filing cabinets along walls ---
+const cabM=smMetal(0x8899aa);
+const cabHandleM=smMetal(0xcccccc);
+function fileCabinet(x,z){
+  box(0.8,1.35,0.5, x,0.675,z, cabM);
+  box(0.7,0.28,0.04, x,0.95,z+0.26, sm(0x7a8a9a)); // drawer 1
+  box(0.7,0.28,0.04, x,0.62,z+0.26, sm(0x7a8a9a)); // drawer 2
+  box(0.7,0.28,0.04, x,0.30,z+0.26, sm(0x7a8a9a)); // drawer 3
+  box(0.15,0.04,0.04, x,0.95,z+0.28, cabHandleM);
+  box(0.15,0.04,0.04, x,0.62,z+0.28, cabHandleM);
+  box(0.15,0.04,0.04, x,0.30,z+0.28, cabHandleM);
+  col(x,0.68,z, 0.85,1.4,0.55);
+}
+for(let z=-36;z<=36;z+=3){ fileCabinet(-39.3,z); }
+for(let z=-36;z<=36;z+=6){ fileCabinet(39.3,z); }
+for(let x=-30;x<=-24;x+=3){ fileCabinet(x,-39.3); }
+
+// --- Printer / copier stations ---
+const printM=smMetal(0x666666);
+function printer(x,z){
+  box(0.8,0.9,0.6, x,0.45,z, printM);
+  box(0.75,0.08,0.55, x,0.9,z, sm(0x444444));
+  box(0.6,0.25,0.04, x,0.65,z+0.31, sm(0x1a1a1a,0x002244,0.2));
+  col(x,0.45,z, 0.85,0.95,0.65);
+}
+printer(-25,-25); printer(25,-25); printer(-25,25); printer(25,25);
+
+// --- Kitchen/break area (south-west corner) ---
+// Counter
+box(4,0.9,0.7, -32,0.45,32, sm(0x8c7a60,0,0,0.5));
+box(4.1,0.05,0.75, -32,0.91,32, sm(0xd0ccc4,0,0,0.3));
+col(-32,0.45,32, 4.1,0.95,0.75);
+// Cupboards above counter
+box(3.8,1.2,0.4, -32,2.5,31.8, sm(0x9a8a70));
+// Coffee machine
+box(0.3,0.45,0.25, -30.2,0.95,31.7, smMetal(0x333333));
+box(0.2,0.08,0.2,  -30.2,1.18,31.7, sm(0x1a1a1a,0x330000,0.3));
+// Fridge
+box(0.8,1.8,0.7, -33.8,0.9,31.7, smMetal(0xaaaaaa));
+col(-33.8,0.9,31.7, 0.85,1.85,0.75);
+// Table + stools
+box(1.2,0.04,0.8, -27,0.74,-32, sm(0x6b4820,0,0,0.4));
+box(0.04,0.7,0.04, -27.5,0.35,-32.35, legMat); box(0.04,0.7,0.04, -26.5,0.35,-32.35, legMat);
+box(0.04,0.7,0.04, -27.5,0.35,-31.65, legMat); box(0.04,0.7,0.04, -26.5,0.35,-31.65, legMat);
+col(-27,0.4,-32, 1.25,0.8,0.85);
+[[-27.6,0.3,-33],[-26.4,0.3,-33],[-27.6,0.3,-31],[-26.4,0.3,-31]].forEach(([x,y,z])=>{
+  box(0.35,0.06,0.35, x,y,z, sm(0x446688)); col(x,y,z,0.4,0.35,0.4);
+});
+
+// --- Sofa lounge area ---
+const sofaM=sm(0x445566,0,0,0.9);
+const sofaBackM=sm(0x3a4a5a,0,0,0.9);
+// L-shaped sofa
+box(3,0.5,0.9, 12,0.25,-26, sofaM); // long side
+box(0.9,0.5,3, 10.55,0.25,-27.55, sofaM); // short side
+box(3,0.7,0.15, 12,0.7,-26.5, sofaBackM); // back
+box(0.15,0.7,3, 10.05,0.7,-27.55, sofaBackM); // side back
+box(0.55,0.8,0.9, 13.5,0.4,-26, sofaBackM); // arm
+box(0.55,0.8,0.9, 10.5,0.4,-26, sofaBackM); // arm
+col(12,0.25,-26, 3.1,0.55,0.95);
+col(10.55,0.25,-27.55, 0.95,0.55,3.1);
+// Coffee table
+box(1.4,0.04,0.8, 12,0.45,-24.5, sm(0x8a7040,0,0,0.3));
+box(0.04,0.42,0.04, 11.35,0.21,-24.1, legMat); box(0.04,0.42,0.04, 12.65,0.21,-24.1, legMat);
+box(0.04,0.42,0.04, 11.35,0.21,-24.9, legMat); box(0.04,0.42,0.04, 12.65,0.21,-24.9, legMat);
+
+// --- Water coolers ---
+function waterCooler(x,z){
+  box(0.35,1.1,0.35, x,0.55,z, sm(0xeef4fa,0,0,0.3)); // body
+  box(0.28,0.35,0.28, x,1.1,z, sm(0x3399cc,0,0,0.4)); // bottle
+  box(0.4,0.05,0.4,   x,0.05,z, smMetal(0x777777));   // base
+  col(x,0.55,z, 0.42,1.15,0.42);
+}
+waterCooler(-35,-10); waterCooler(35,10); waterCooler(0,-35);
+
+// --- PlayOJO wall art + branding ---
+const TL=new THREE.TextureLoader();
+function wallPlane(url,w,h,x,y,z,ry){
+  TL.load(url,tex=>{
+    tex.colorSpace=THREE.SRGBColorSpace;
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),
+      new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
+    m.position.set(x,y,z); m.rotation.y=ry; scene.add(m);
+  });
+}
+wallPlane('/logo_ojo.png', 5,2.5,   0,5,-39.7, 0);
+wallPlane('/logo_owl.jpg', 4,4,  -25,4,-39.7, 0);
+wallPlane('/logo_owl.jpg', 4,4,   25,4,-39.7, 0);
+wallPlane('/logo_ojo.png', 5,2.5, -39.7,5,  0, Math.PI/2);
+wallPlane('/logo_owl.jpg', 4,4,  -39.7,5,-20, Math.PI/2);
+wallPlane('/logo_owl.jpg', 4,4,  -39.7,5, 20, Math.PI/2);
+
+// Whiteboard (north wall, beside reception)
+box(3,2,0.08, -20,3,-39.6, sm(0xf8f8f0,0,0,0.1));
+box(3.1,2.1,0.06, -20,3,-39.65, smMetal(0x888888));
+// Whiteboard text
+const wbC=document.createElement('canvas'); wbC.width=512; wbC.height=256;
+const wbx=wbC.getContext('2d');
+wbx.fillStyle='#f8f8f0'; wbx.fillRect(0,0,512,256);
+wbx.font='bold 48px Arial'; wbx.fillStyle='#1155cc'; wbx.textAlign='center'; wbx.textBaseline='middle';
+wbx.fillText('PPC STRIKE',256,80);
+wbx.font='24px Arial'; wbx.fillStyle='#cc2222';
+wbx.fillText('Free For All — Good Luck!',256,140);
+wbx.font='18px Arial'; wbx.fillStyle='#444444';
+wbx.fillText('May the best PPC team win',256,190);
+const wbTex=new THREE.CanvasTexture(wbC);
+const wbMesh=new THREE.Mesh(new THREE.PlaneGeometry(2.8,1.8),new THREE.MeshBasicMaterial({map:wbTex}));
+wbMesh.position.set(-20,3,-39.55); scene.add(wbMesh);
+
+// Motivational poster
+const posC=document.createElement('canvas'); posC.width=256; posC.height=384;
+const pctx=posC.getContext('2d');
+const grad=pctx.createLinearGradient(0,0,0,384);
+grad.addColorStop(0,'#1a2a4a'); grad.addColorStop(1,'#0a1020');
+pctx.fillStyle=grad; pctx.fillRect(0,0,256,384);
+pctx.font='bold 32px Arial'; pctx.fillStyle='#ff9900'; pctx.textAlign='center';
+pctx.fillText('HUSTLE',128,100); pctx.fillText('HARDER',128,150);
+pctx.font='16px Arial'; pctx.fillStyle='#aaaaaa'; pctx.fillText('— PlayOJO PPC Team',128,220);
+const posTex=new THREE.CanvasTexture(posC);
+const posMesh=new THREE.Mesh(new THREE.PlaneGeometry(1,1.5),new THREE.MeshBasicMaterial({map:posTex}));
+posMesh.position.set(39.7,3.5,-15); posMesh.rotation.y=-Math.PI/2; scene.add(posMesh);
 
 // ─── LASERS ──────────────────────────────────
 const lasers=[];
@@ -371,6 +647,8 @@ function spawnLaser(ox,oy,oz,dx,dy,dz,col){
   const geo=new THREE.BufferGeometry().setFromPoints(pts);
   const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:col,linewidth:2}));
   line.position.set(ox,oy,oz); scene.add(line);
+  const fl=new THREE.PointLight(col,6,5); fl.position.set(ox,oy,oz); scene.add(fl);
+  setTimeout(()=>scene.remove(fl),80);
   lasers.push({m:line,dx,dy,dz,life:0.28});
 }
 
@@ -392,6 +670,8 @@ function makePMesh(name,skinIdx){
   const body=new THREE.Mesh(new THREE.BoxGeometry(.6,1,.4),bm); body.position.y=.5; g.add(body);
   const head=new THREE.Mesh(new THREE.BoxGeometry(.45,.45,.45),new THREE.MeshStandardMaterial({color:0xffcc99}));
   head.position.y=1.25; g.add(head);
+  const gun=new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.55),new THREE.MeshStandardMaterial({color:0x333333,emissive:0x555555,emissiveIntensity:.4}));
+  gun.position.set(.35,1,-.38); g.add(gun);
   const lbl=nameSprite(name,sk.hex); lbl.position.set(0,2.1,0); g.add(lbl);
   scene.add(g); return g;
 }
@@ -402,17 +682,27 @@ function overlaps(x,y,z,c){
   return x+PR>c.minX&&x-PR<c.maxX&&fy<c.maxY&&fy+PH>c.minY&&z+PR>c.minZ&&z-PR<c.maxZ;
 }
 function slide(pos,dx,dy,dz){
-  onGround=false;
   if(!COL.some(c=>overlaps(pos.x+dx,pos.y,pos.z,c))) pos.x+=dx; else vel.x=0;
   if(!COL.some(c=>overlaps(pos.x,pos.y,pos.z+dz,c))) pos.z+=dz; else vel.z=0;
   if(!COL.some(c=>overlaps(pos.x,pos.y+dy,pos.z,c))) pos.y+=dy;
   else{if(vel.y<0)onGround=true;vel.y=0;}
+}
+function rayBox(ox,oy,oz,dx,dy,dz,c){
+  const e=1e-8,ix=1/(Math.abs(dx)<e?e:dx),iy=1/(Math.abs(dy)<e?e:dy),iz=1/(Math.abs(dz)<e?e:dz);
+  const tx1=(c.minX-ox)*ix,tx2=(c.maxX-ox)*ix,ty1=(c.minY-oy)*iy,ty2=(c.maxY-oy)*iy,tz1=(c.minZ-oz)*iz,tz2=(c.maxZ-oz)*iz;
+  const tn=Math.max(Math.min(tx1,tx2),Math.min(ty1,ty2),Math.min(tz1,tz2));
+  const tx=Math.min(Math.max(tx1,tx2),Math.max(ty1,ty2),Math.max(tz1,tz2));
+  return(tx>=0&&tn<=tx)?Math.max(0,tn):Infinity;
+}
+function nearBox(ox,oy,oz,dx,dy,dz){
+  let t=Infinity; COL.forEach(c=>{const h=rayBox(ox,oy,oz,dx,dy,dz,c);if(h<t)t=h;}); return t;
 }
 
 // ─── INPUT ───────────────────────────────────
 const keys={};
 document.addEventListener('keydown',e=>{
   keys[e.code]=true; if(!inGame)return;
+  if(e.code==='KeyR')socket.emit('reload');
   if(e.code==='Digit1')sw('rifle');
   if(e.code==='Digit2')sw('pistol');
   if(e.code==='Digit3')sw('sniper');
@@ -420,8 +710,21 @@ document.addEventListener('keydown',e=>{
   if(e.code==='Space'&&onGround&&alive){vel.y=JV;onGround=false;}
 });
 document.addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Tab')showSB(false);});
-document.addEventListener('mousedown',e=>{if(e.button===0)shooting=true;});
-document.addEventListener('mouseup',e=>{if(e.button===0)shooting=false;});
+document.addEventListener('mousedown',e=>{
+  if(e.button===0)shooting=true;
+  if(e.button===2&&curWeapon==='sniper'&&pointerLocked){
+    scoped=true;cam.fov=SCOPE_FOV;cam.updateProjectionMatrix();
+    document.getElementById('scope-overlay').classList.add('on');
+    document.getElementById('xhair').style.display='none';
+  }
+});
+document.addEventListener('mouseup',e=>{
+  if(e.button===0)shooting=false;
+  if(e.button===2){scoped=false;cam.fov=NORMAL_FOV;cam.updateProjectionMatrix();
+    document.getElementById('scope-overlay').classList.remove('on');
+    document.getElementById('xhair').style.display='block';}
+});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
 document.addEventListener('mousemove',e=>{
   if(!pointerLocked||!inGame||!alive)return;
   yaw-=e.movementX*.002;pitch-=e.movementY*.002;
@@ -429,20 +732,38 @@ document.addEventListener('mousemove',e=>{
 });
 function tryLock(){if(inGame)canvas.requestPointerLock();}
 canvas.addEventListener('click',tryLock);
-document.addEventListener('pointerlockchange',()=>{pointerLocked=document.pointerLockElement===canvas;});
-
+document.getElementById('lockprompt').addEventListener('click',tryLock);
+document.addEventListener('pointerlockchange',()=>{
+  pointerLocked=document.pointerLockElement===canvas;
+  if(inGame)document.getElementById('lockprompt').style.display=(pointerLocked||!alive)?'none':'flex';
+});
+document.addEventListener('pointerlockerror',()=>setTimeout(tryLock,600));
 function sw(w){
+  if(scoped&&w!=='sniper'){scoped=false;cam.fov=NORMAL_FOV;cam.updateProjectionMatrix();
+    document.getElementById('scope-overlay').classList.remove('on');
+    document.getElementById('xhair').style.display='block';}
   curWeapon=w;socket.emit('switchWeapon',{weapon:w});
   document.querySelectorAll('.wbtn').forEach(b=>b.classList.toggle('on',b.dataset.w===w));
+  document.getElementById('wep-name').textContent=WLABEL[w];
+  document.getElementById('slot-label').textContent=WSLOT[w];
 }
+document.querySelectorAll('.wbtn').forEach(b=>b.addEventListener('click',()=>sw(b.dataset.w)));
 
 // ─── SOCKET EVENTS ───────────────────────────
+socket.on('connect_error',()=>alert('Cannot connect to server.'));
 socket.on('joined',data=>{
-  myId=data.id;
+  myId=data.id;myTeam=data.player.team;
   cam.position.set(data.player.x,data.player.y+1.7,data.player.z);
+  document.getElementById('ammo-cur').textContent=data.player.ammo;
+  document.getElementById('ammo-res').textContent=data.player.reserve;
   document.getElementById('lobby').style.display='none';
   document.getElementById('hud').style.display='block';
+  const sk=SKINS[data.player.skin||0];
+  document.getElementById('teambadge').textContent=data.player.name;
+  document.getElementById('teambadge').style.color=sk.hex;
+  if(data.roundActive)setTimer(data.roundTimer);
   inGame=true;
+  document.getElementById('lockprompt').style.display='flex';
 });
 socket.on('playerList',data=>{
   remotePlayers=data;
@@ -450,21 +771,125 @@ socket.on('playerList',data=>{
     if(id===myId)return;
     if(!pMeshes[id])pMeshes[id]=makePMesh(p.name,p.skin||0);
     pMeshes[id].position.set(p.x,p.y,p.z);
+    pMeshes[id].rotation.y=p.rotY||0;
     pMeshes[id].visible=p.alive;
   });
+  Object.keys(pMeshes).forEach(id=>{if(!data[id]){scene.remove(pMeshes[id]);delete pMeshes[id];}});
 });
-socket.on('playerHit',({id,health:hp})=>{if(id===myId)setHP(hp);});
-socket.on('playerKilled',({id})=>{if(id===myId)showDeath();});
+socket.on('playerMoved',({id,x,y,z,rotY})=>{
+  if(id===myId)return;
+  if(!pMeshes[id]){if(remotePlayers[id])pMeshes[id]=makePMesh(remotePlayers[id].name,remotePlayers[id].skin||0);else return;}
+  pMeshes[id].position.set(x,y,z);pMeshes[id].rotation.y=rotY;
+  if(remotePlayers[id])Object.assign(remotePlayers[id],{x,y,z,rotY});
+});
+socket.on('playerShot',({id,x,y,z,dx,dy,dz,skin})=>{
+  if(id===myId)return;
+  spawnLaser(x,y+.8,z,dx,dy,dz,(SKINS[skin]||SKINS[0]).laser);
+});
+socket.on('playerHit',({id,health:hp})=>{
+  if(id===myId){
+    setHP(hp);
+    const fl=document.getElementById('dmg-flash');
+    fl.style.opacity='1';setTimeout(()=>fl.style.opacity='0',200);
+  }
+  if(remotePlayers[id])remotePlayers[id].health=hp;
+  const hm=document.getElementById('hitfx');
+  hm.style.opacity='1';setTimeout(()=>hm.style.opacity='0',140);
+});
+socket.on('playerKilled',({id,killFeed})=>{
+  if(id===myId)showDeath();
+  if(pMeshes[id])pMeshes[id].visible=false;
+  drawKF(killFeed);
+});
 socket.on('playerRespawned',({id,x,y,z})=>{
-  if(id===myId){alive=true;cam.position.set(x,y+1.7,z);setHP(100);document.getElementById('deathscreen').style.display='none';}
+  if(id===myId){alive=true;cam.position.set(x,y+1.7,z);setHP(100);
+    document.getElementById('deathscreen').style.display='none';
+    document.getElementById('lockprompt').style.display='flex';}
+  if(pMeshes[id]){pMeshes[id].position.set(x,y,z);pMeshes[id].visible=true;}
 });
+socket.on('roundStart',({players,scores})=>{remotePlayers=players;setScores(scores);});
+socket.on('roundEnd',({winner,scores})=>{
+  setScores(scores);roundNum++;
+  document.getElementById('round-num').textContent=roundNum;
+  flash(winner==='draw'?'ROUND DRAW':'ROUND OVER');
+  showSB(true);setTimeout(()=>showSB(false),4500);
+});
+socket.on('matchOver',({winner})=>{
+  const el=document.getElementById('matchover');
+  document.getElementById('match-result').textContent=winner===myId?'🏆 YOU WIN!':'💀 DEFEATED';
+  document.getElementById('match-result').style.color=winner===myId?'#ffcc00':'#ff2222';
+  el.style.display='flex';setTimeout(()=>el.style.display='none',9000);
+});
+socket.on('timerUpdate',setTimer);
+socket.on('ammoUpdate',({ammo,reserve})=>{
+  document.getElementById('ammo-cur').textContent=ammo;
+  document.getElementById('ammo-res').textContent=reserve;
+});
+socket.on('scoreUpdate',p=>{remotePlayers=p;});
+socket.on('noAmmo',()=>{
+  const el=document.getElementById('wep-name');
+  el.textContent='-- RELOAD (R) --';
+  setTimeout(()=>el.textContent=WLABEL[curWeapon],1400);
+});
+socket.on('serverFull',()=>alert('Server is full.'));
 
+// ─── UI ──────────────────────────────────────
 function setHP(hp){
-  document.getElementById('hp-num').textContent=Math.max(0,hp);
-  document.getElementById('hp-fill').style.width=hp+'%';
+  health=Math.max(0,hp);
+  document.getElementById('hp-num').textContent=health;
+  document.getElementById('hp-fill').style.width=health+'%';
+  document.getElementById('hp-fill').style.background=health>60?'#33cc55':health>30?'#ddaa00':'#cc3333';
 }
-function showDeath(){alive=false;document.getElementById('deathscreen').style.display='flex';}
-function showSB(on){document.getElementById('scoreboard').classList.toggle('show',on);}
+function setTimer(sec){
+  const el=document.getElementById('timer');
+  el.textContent=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
+  el.style.color=sec<=10?'#ff4444':'#fff';
+}
+function setScores(sc){
+  document.getElementById('score-ojo').textContent=sc.OJO||0;
+  document.getElementById('score-str').textContent=sc.STRIKE||0;
+}
+function drawKF(kf){
+  document.getElementById('kfeed').innerHTML=kf.slice(0,5).map(k=>
+    '<div class="kfe"><span class="kfk">'+k.killer+'</span>'+
+    '<span class="kfwep">['+k.weapon+']</span>'+
+    '<span class="kfv">'+k.victim+'</span></div>'
+  ).join('');
+}
+function showDeath(){
+  alive=false;pointerLocked=false;
+  scoped=false;cam.fov=NORMAL_FOV;cam.updateProjectionMatrix();
+  document.getElementById('scope-overlay').classList.remove('on');
+  document.getElementById('xhair').style.display='block';
+  document.getElementById('deathscreen').style.display='flex';
+  document.getElementById('lockprompt').style.display='none';
+  let t=5;
+  document.getElementById('respawn-timer').textContent='Respawning in 5...';
+  const iv=setInterval(()=>{t--;
+    document.getElementById('respawn-timer').textContent=t>0?'Respawning in '+t+'...':'RESPAWNING...';
+    if(t<=0)clearInterval(iv);},1000);
+}
+function showSB(on){
+  const sb=document.getElementById('scoreboard');
+  if(on){
+    sb.classList.add('show');
+    const all=Object.values(remotePlayers).sort((a,b)=>b.kills-a.kills);
+    document.getElementById('sb-body').innerHTML=all.map(p=>{
+      const kd=p.deaths?(p.kills/p.deaths).toFixed(2):p.kills.toFixed(1);
+      const kdc=parseFloat(kd)>=1?'kd-g':parseFloat(kd)<.5?'kd-r':'kd-n';
+      const cls=p.id===myId?'sb-me':p.name==='BOT'?'sb-bot':'';
+      const sk=SKINS[p.skin||0];
+      return '<tr class="'+cls+'"><td style="color:'+sk.hex+'">'+p.name+(p.id===myId?' ★':'')+'</td>'+
+        '<td>'+p.kills+'</td><td>'+p.deaths+'</td><td class="'+kdc+'">'+kd+'</td></tr>';
+    }).join('');
+  }else sb.classList.remove('show');
+}
+function flash(txt){
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;top:36%;left:50%;transform:translate(-50%,-50%);'+
+    'font-size:1.8rem;font-weight:900;color:#ffcc44;z-index:40;pointer-events:none;letter-spacing:5px;font-family:Arial';
+  el.textContent=txt;document.body.appendChild(el);setTimeout(()=>el.remove(),2600);
+}
 
 // ─── GAME LOOP ────────────────────────────────
 const clock=new THREE.Clock();
@@ -486,8 +911,9 @@ function tick(dt){
   if(md.lengthSq()>0)md.normalize();
   vel.x=md.x*spd;vel.z=md.z*spd;
   slide(cam.position,vel.x*dt,vel.y*dt,vel.z*dt);
-  // Floor clamping
-  if(cam.position.y<1.7){cam.position.y=1.7;if(vel.y<0){vel.y=0;onGround=true;}}
+  if(cam.position.y<1.7){cam.position.y=1.7;vel.y=0;onGround=true;}
+  cam.position.x=Math.max(-39,Math.min(39,cam.position.x));
+  cam.position.z=Math.max(-39,Math.min(39,cam.position.z));
   euler.set(pitch,yaw,0);cam.quaternion.setFromEuler(euler);
   sendT+=dt;
   if(sendT>=.05){sendT=0;socket.emit('move',{x:cam.position.x,y:cam.position.y-1.7,z:cam.position.z,rotY:yaw});}
@@ -495,18 +921,28 @@ function tick(dt){
     const now=Date.now();
     if(now-lastShot>=WRATE[curWeapon]){
       lastShot=now;
+      euler.set(pitch,yaw,0);
       const dir=new THREE.Vector3(0,0,-1).applyEuler(euler).normalize();
       spawnLaser(cam.position.x,cam.position.y-.3,cam.position.z,dir.x,dir.y,dir.z,SKINS[selectedSkin].laser);
       socket.emit('shoot',{dirX:dir.x,dirY:dir.y,dirZ:dir.z});
+      if(curWeapon!=='rifle')shooting=false;
     }
   }
 }
 function animate(){requestAnimationFrame(animate);tick(Math.min(clock.getDelta(),.05));renderer.render(scene,cam);}
 animate();
 
+// ─── JOIN ─────────────────────────────────────
 document.getElementById('joinBtn').addEventListener('click',()=>{
   const name=document.getElementById('nameInput').value.trim()||'OJO Player';
-  socket.emit('join',{name,withBots:document.getElementById('botsCheck').checked,skin:selectedSkin});
+  const bots=document.getElementById('botsCheck').checked;
+  const btn=document.getElementById('joinBtn');
+  btn.disabled=true;btn.textContent='CONNECTING...';
+  if(socket.connected)socket.emit('join',{name,withBots:bots,skin:selectedSkin});
+  else socket.once('connect',()=>socket.emit('join',{name,withBots:bots,skin:selectedSkin}));
+});
+document.getElementById('nameInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter')document.getElementById('joinBtn').click();
 });
 </script>
 </body>
