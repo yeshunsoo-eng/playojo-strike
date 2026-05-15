@@ -35,10 +35,21 @@ const ROUND_TIME   = 120;
 const RESPAWN_WAIT = 5;
 const ROUNDS_TO_WIN= 5;
 
-const SPAWNS = {
-  OJO:    [{ x:-18,y:0,z:-18 },{ x:-15,y:0,z:-18 },{ x:-18,y:0,z:-15 },{ x:-12,y:0,z:-18 }],
-  STRIKE: [{ x: 18,y:0,z: 18 },{ x: 15,y:0,z: 18 },{ x: 18,y:0,z: 15 },{ x: 12,y:0,z: 18 }]
-};
+// New FFA Spawn Points (Extreme corners and edges, far away from the center 'X' block)
+const SPAWNS = [
+  { x: -40, y: 0, z: -25 }, // Top-Left corner
+  { x:  40, y: 0, z: -25 }, // Top-Right corner
+  { x: -40, y: 0, z:  25 }, // Bottom-Left corner
+  { x:  40, y: 0, z:  25 }, // Bottom-Right corner
+  { x: -40, y: 0, z:   0 }, // Mid-Left edge
+  { x:  40, y: 0, z:   0 }, // Mid-Right edge
+  { x:  10, y: 0, z: -25 }, // Top-Mid edge
+  { x: -10, y: 0, z:  25 }  // Bottom-Mid edge
+];
+
+function randSpawn() {
+  return { ...SPAWNS[Math.floor(Math.random() * SPAWNS.length)] };
+}
 
 const WEAPONS = {
   rifle:  { damage:30,  fireRate:150,  ammo:30, reserve:90,  reloadTime:2000 },
@@ -97,7 +108,7 @@ let botInterval = null;
 let killFeed    = [];
 
 // ── Helpers ──────────────────────────────────────────────
-function randSpawn(team) {
+function randSpawn() {
   const pts = SPAWNS[team] || SPAWNS.OJO;
   return { ...pts[Math.floor(Math.random() * pts.length)] };
 }
@@ -158,7 +169,7 @@ function startRound() {
   killFeed    = [];
 
   Object.values(players).forEach(p => {
-    const sp = randSpawn(p.team);
+    const sp = randSpawn();
     p.health = 100; p.alive = true;
     p.x = sp.x; p.y = sp.y; p.z = sp.z;
     // Reset ammo for current weapon
@@ -207,7 +218,7 @@ function addBots() {
   for (let i = 0; i < 4; i++) {
     const id = 'bot_' + Math.random().toString(36).slice(2, 7);
     const team = assignTeam();
-    const sp = randSpawn(team);
+    const sp = randSpawn();
     players[id] = {
       id, name: 'BOT', team, skin: Math.floor(Math.random()*6),
       health: 100, alive: true, x: sp.x, y: sp.y, z: sp.z, rotY: 0,
@@ -254,7 +265,7 @@ io.on('connection', socket => {
 
   socket.on('join', ({ name, skin, withBots }) => {
     const team = assignTeam();
-    const sp = randSpawn(team);
+    const sp = randSpawn();
     players[socket.id] = {
       id: socket.id, name: name || 'Player', team, skin: skin || 0,
       health: 100, alive: true, x: sp.x, y: sp.y, z: sp.z, rotY: 0,
