@@ -25,7 +25,7 @@
     #joinBtn{padding:12px 36px;font-size:1rem;font-weight:700;border:none;border-radius:6px;
       background:linear-gradient(90deg,#ff6600,#ff9900);color:#fff;cursor:pointer;
       letter-spacing:2px;text-transform:uppercase}
-    
+
     /* Skin selector */
     #skin-title{font-size:.65rem;color:#888;letter-spacing:3px;text-transform:uppercase;margin-bottom:.6rem;align-self:flex-start}
     #skin-grid{display:flex;gap:9px;margin-bottom:1rem;flex-wrap:wrap;justify-content:center}
@@ -279,41 +279,18 @@ function box(w,h,d,x,y,z,mat){
 }
 function addCol(x,y,z,w,h,d){COL.push({minX:x-w/2,maxX:x+w/2,minY:y-h/2,maxY:y+h/2,minZ:z-d/2,maxZ:z+d/2});}
 
-// Floor & Ceiling
+// Solid Floor & Ceiling
 box(80,0.15,80, 0,0,0, sm(0x8a8878)); 
-box(80,0.25,80, 0,8,0, sm(0xf0ede6)); 
+box(80,0.25,80, 0,16,0, sm(0xf0ede6)); 
 
-// Outer Walls (Visual + Collision)
+// Big Square Solid Walls (Floor to Ceiling, Enclosed)
 const wallM = sm(0xf2efe8);
-box(80,8,0.25, 0,4,-40, wallM); addCol(0,4,-40, 80,8,0.5); // North
-box(80,8,0.25, 0,4,40, wallM);  addCol(0,4,40, 80,8,0.5);  // South
-box(0.25,8,80, -40,4,0, wallM); addCol(-40,4,0, 0.5,8,80); // West
-box(0.25,8,80, 40,4,0, wallM);  addCol(40,4,0, 0.5,8,80);  // East
+box(80,16,1, 0,8,-40, wallM); addCol(0,8,-40, 80,16,1); // North Wall
+box(80,16,1, 0,8,40, wallM);  addCol(0,8,40, 80,16,1);  // South Wall
+box(1,16,80, -40,8,0, wallM); addCol(-40,8,0, 1,16,80); // West Wall
+box(1,16,80, 40,8,0, wallM);  addCol(40,8,0, 1,16,80);  // East Wall
 
-// ─── OFFICE FURNITURE (Synced with Server Hitboxes!) ───
-const woodM = sm(0xa08b70);
-const cabM  = sm(0x778899);
-const darkM = sm(0x333333);
-const glassM= sm(0x88ccff);
-
-// 1 & 2. Desk Pods (Left and Right)
-box(4, 1.2, 4, -8, 0.6, 0, woodM); box(3.8, 0.8, 0.2, -8, 1.6, 0, glassM); addCol(-8, 1, 0, 4, 2, 4);
-box(4, 1.2, 4, 8, 0.6, 0, woodM);  box(3.8, 0.8, 0.2, 8, 1.6, 0, glassM);  addCol(8, 1, 0, 4, 2, 4);
-
-// 3 & 4. Filing Cabinets / Server Racks (North and South)
-box(2, 3, 8, 0, 1.5, -10, cabM); addCol(0, 1.5, -10, 2, 3, 8);
-box(2, 3, 8, 0, 1.5, 10, cabM);  addCol(0, 1.5, 10, 2, 3, 8);
-
-// 5 & 6. Conference Tables (Far Left and Far Right)
-box(8, 0.1, 2, -12, 1.45, -6, woodM); box(6, 1.4, 1, -12, 0.7, -6, darkM); addCol(-12, 0.75, -6, 8, 1.5, 2);
-box(8, 0.1, 2, 12, 1.45, 6, woodM);   box(6, 1.4, 1, 12, 0.7, 6, darkM);   addCol(12, 0.75, 6, 8, 1.5, 2);
-
-// 7 & 8. Pillars
-const pillarM = sm(0xe8e4dc);
-box(1.1, 8, 1.1, -20, 4, -20, pillarM); addCol(-20, 4, -20, 1.1, 8, 1.1);
-box(1.1, 8, 1.1, 20, 4, 20, pillarM);   addCol(20, 4, 20, 1.1, 8, 1.1);
-
-// Wall Banners
+// Plastering Banners on the huge solid walls
 const TL=new THREE.TextureLoader();
 function createBanner(url,w,h,x,y,z,ry){
   TL.load(url,tex=>{
@@ -322,9 +299,67 @@ function createBanner(url,w,h,x,y,z,ry){
     m.position.set(x,y,z); m.rotation.y=ry; scene.add(m);
   });
 }
-createBanner('logo_ojo.png', 8, 4, 0, 4, -39.8, 0); 
-createBanner('logo_owl.jpg', 6, 6, 39.8, 4, 0, -Math.PI/2); 
-createBanner('logo_owl.jpg', 6, 6, -39.8, 4, 0, Math.PI/2); 
+createBanner('logo_ojo.png', 30, 12, 0, 7, -39.4, 0);            // North Banner
+createBanner('logo_ojo.png', 30, 12, 0, 7, 39.4, Math.PI);       // South Banner
+createBanner('logo_owl.jpg', 16, 16, 39.4, 7, 0, -Math.PI/2);    // East Banner
+createBanner('logo_owl.jpg', 16, 16, -39.4, 7, 0, Math.PI/2);    // West Banner
+
+// ─── OFFICE FURNITURE (Synced with Server Hitboxes!) ───
+const woodM = sm(0xbb9977);
+const deskLegM = sm(0x222222);
+const glassM = sm(0x88aaff);
+const monM = sm(0x111111);
+const cabM = sm(0x333344);
+const chairM = sm(0x555555);
+
+// Furniture builder functions matching server Cover array exactly
+function makeDeskCluster(cx, cz) {
+    // Table top
+    box(4, 0.1, 4, cx, 0.75, cz, woodM);
+    // Legs
+    box(0.1, 0.75, 0.1, cx-1.9, 0.375, cz-1.9, deskLegM); box(0.1, 0.75, 0.1, cx+1.9, 0.375, cz-1.9, deskLegM);
+    box(0.1, 0.75, 0.1, cx-1.9, 0.375, cz+1.9, deskLegM); box(0.1, 0.75, 0.1, cx+1.9, 0.375, cz+1.9, deskLegM);
+    // Dividers
+    box(3.8, 0.6, 0.1, cx, 1.1, cz, glassM); box(0.1, 0.6, 3.8, cx, 1.1, cz, glassM);
+    // Monitors
+    box(0.8, 0.5, 0.1, cx-1, 1.1, cz-0.2, monM); box(0.8, 0.5, 0.1, cx+1, 1.1, cz-0.2, monM);
+    box(0.8, 0.5, 0.1, cx-1, 1.1, cz+0.2, monM); box(0.8, 0.5, 0.1, cx+1, 1.1, cz+0.2, monM);
+    // Exact Server Hitbox matching
+    addCol(cx, 1, cz, 4, 2, 4);
+}
+
+function makeServerRack(cx, cz) {
+    box(2, 3, 8, cx, 1.5, cz, cabM);
+    // Rack detail lines
+    box(2.05, 0.1, 7.8, cx, 0.5, cz, monM); box(2.05, 0.1, 7.8, cx, 1.0, cz, monM);
+    box(2.05, 0.1, 7.8, cx, 1.5, cz, monM); box(2.05, 0.1, 7.8, cx, 2.0, cz, monM);
+    box(2.05, 0.1, 7.8, cx, 2.5, cz, monM);
+    // Exact Server Hitbox matching
+    addCol(cx, 1.5, cz, 2, 3, 8);
+}
+
+function makeConferenceTable(cx, cz) {
+    box(8, 0.1, 2, cx, 0.75, cz, sm(0x995533));
+    box(6, 0.75, 1, cx, 0.375, cz, deskLegM);
+    // Office Chairs around table
+    box(0.5, 0.5, 0.5, cx-2, 0.25, cz-1.5, chairM); box(0.5, 0.5, 0.5, cx+2, 0.25, cz+1.5, chairM);
+    box(0.5, 0.5, 0.5, cx, 0.25, cz-1.5, chairM);   box(0.5, 0.5, 0.5, cx, 0.25, cz+1.5, chairM);
+    // Exact Server Hitbox matching
+    addCol(cx, 0.75, cz, 8, 1.5, 2);
+}
+
+// Instantiate the obstacles using our detailed functions
+makeDeskCluster(-8, 0); 
+makeDeskCluster(8, 0); 
+makeServerRack(0, -10); 
+makeServerRack(0, 10); 
+makeConferenceTable(-12, -6); 
+makeConferenceTable(12, 6);
+
+// Pillars (Keep existing hitboxes)
+const pillarMat = sm(0xe8e4dc);
+box(1.1, 16, 1.1, -20, 8, -20, pillarMat); addCol(-20, 4, -20, 1.1, 8, 1.1);
+box(1.1, 16, 1.1, 20, 8, 20, pillarMat);   addCol(20, 4, 20, 1.1, 8, 1.1);
 
 // Player Meshes
 const pMeshes={};
@@ -486,11 +521,7 @@ socket.on('playerKilled',({id,killFeed})=>{
 
 socket.on('scoreUpdate', data => {
   remotePlayers = data;
-  
-  // If you are currently holding TAB, this will update the numbers live!
-  if (document.getElementById('scoreboard').classList.contains('show')) {
-    showSB(true); 
-  }
+  if (document.getElementById('scoreboard').classList.contains('show')) showSB(true); 
 });
     
 socket.on('playerRespawned',({id,x,y,z})=>{
@@ -556,7 +587,6 @@ function animate(){
         spawnLaser(cam.position.x, cam.position.y-0.3, cam.position.z, dir.x, dir.y, dir.z, SKINS[selectedSkin].laser);
         socket.emit('shoot',{dirX:dir.x, dirY:dir.y, dirZ:dir.z});
         
-        // Semi-auto logic
         if(curWeapon !== 'rifle') shooting=false;
       }
     }
