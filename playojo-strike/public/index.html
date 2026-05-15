@@ -463,9 +463,15 @@ document.addEventListener('mousemove',e=>{
 });
 function tryLock(){if(inGame)canvas.requestPointerLock();}
 canvas.addEventListener('click',tryLock);
-document.addEventListener('pointerlockchange',()=>{
-  pointerLocked=document.pointerLockElement===canvas;
-  if(inGame)document.getElementById('lockprompt').style.display=(pointerLocked||!alive)?'none':'flex';
+document.addEventListener('pointerlockchange', () => {
+    pointerLocked = (document.pointerLockElement === canvas);
+    
+    // Only show the prompt if we are IN GAME and NOT LOCKED and ALIVE
+    if (inGame && alive && !pointerLocked) {
+        document.getElementById('lockprompt').style.display = 'flex';
+    } else {
+        document.getElementById('lockprompt').style.display = 'none';
+    }
 });
 
 function sw(w){
@@ -481,12 +487,21 @@ function sw(w){
 }
 
 // ─── SOCKET LISTENERS ───
-socket.on('joined',data=>{
-  myId=data.id;
-  document.getElementById('lobby').style.display='none';
-  document.getElementById('hud').style.display='block';
-  inGame=true;
-  document.getElementById('lockprompt').style.display='flex';
+socket.on('joined', data => {
+    myId = data.id;
+    inGame = true;
+    alive = true;
+    
+    // 1. Hide the Lobby
+    document.getElementById('lobby').style.display = 'none';
+    
+    // 2. Show the HUD
+    document.getElementById('hud').style.display = 'block';
+    
+    // 3. FORCE HIDE the Lock Prompt immediately so you can see
+    document.getElementById('lockprompt').style.display = 'none';
+    
+    console.log("Game Joined Successfully");
 });
 socket.on('playerList',data=>{
   remotePlayers=data;
