@@ -484,6 +484,15 @@ socket.on('playerKilled',({id,killFeed})=>{
   document.getElementById('kfeed').innerHTML=killFeed.slice(0,5).map(k=>`<div class="kfe"><span class="kfk">${k.killer}</span> [${k.weapon}] <span class="kfv">${k.victim}</span></div>`).join('');
 });
 
+socket.on('scoreUpdate', data => {
+  remotePlayers = data;
+  
+  // If you are currently holding TAB, this will update the numbers live!
+  if (document.getElementById('scoreboard').classList.contains('show')) {
+    showSB(true); 
+  }
+});
+    
 socket.on('playerRespawned',({id,x,y,z})=>{
   if(id===myId){
     alive=true; health=100;
