@@ -498,7 +498,13 @@ document.getElementById('joinBtn').addEventListener('click',()=>{
 });
 
 socket.on('joined', data => {
-    myId = data.id; inGame = true; alive = true;
+    myId = data.id; 
+    inGame = true; 
+    alive = true;
+    
+    // ── THIS IS THE MISSING LINE! Teleport camera to the server's spawn point ──
+    cam.position.set(data.player.x, 1.7, data.player.z);
+
     document.getElementById('lobby').style.display = 'none';
     document.getElementById('hud').style.display = 'block';
     document.getElementById('lockprompt').style.display = 'none';
