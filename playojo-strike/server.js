@@ -14,7 +14,6 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Image proxy for cross-origin images (if needed)
 app.get('/proxy-image', (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).send('Missing url');
@@ -35,16 +34,16 @@ const MAX_PLAYERS  = 12;
 const ROUND_TIME   = 180; // 3 minute rounds
 const RESPAWN_WAIT = 3;
 
-// FFA Spawn Points (Extreme corners and edges, away from the center 'X' block)
+// STRICTLY SAFE SPAWNS: Only outer walkways and empty corridors
 const SPAWNS = [
-  { x: -40, y: 0, z: -25 }, // Top-Left corner
-  { x:  40, y: 0, z: -25 }, // Top-Right corner
-  { x: -40, y: 0, z:  25 }, // Bottom-Left corner
-  { x:  40, y: 0, z:  25 }, // Bottom-Right corner
-  { x: -40, y: 0, z:   0 }, // Mid-Left edge
-  { x:  40, y: 0, z:   0 }, // Mid-Right edge
-  { x:  10, y: 0, z: -25 }, // Top-Mid edge
-  { x: -10, y: 0, z:  25 }  // Bottom-Mid edge
+  { x: -42, y: 0, z: -27 }, // Extreme Top-Left Walkway
+  { x:  20, y: 0, z: -27 }, // Top-Right Walkway
+  { x: -42, y: 0, z:  27 }, // Extreme Bottom-Left Walkway
+  { x:  42, y: 0, z:  27 }, // Extreme Bottom-Right Walkway
+  { x: -42, y: 0, z:   0 }, // Far Left Walkway
+  { x:  42, y: 0, z: -10 }, // Far Right Walkway
+  { x:   0, y: 0, z: -27 }, // Top-Mid Walkway
+  { x:   0, y: 0, z:  27 }  // Bottom-Mid Walkway
 ];
 
 const WEAPONS = {
@@ -53,39 +52,15 @@ const WEAPONS = {
   sniper: { damage: 100, fireRate: 1200, ammo: 5,  reserve: 20,  reloadTime: 3000 }
 };
 
-// ── NEW MAP HITBOXES (Matches the HTML layout perfectly) ──
+// ── BULLET HITBOXES (Walls Only - Bullets pass through furniture!) ──
 const COVER = [
-  // CENTRAL CORE ('X' BLOCK)
+  // Central Core ('X' Block)
   { w: 20, h: 16, d: 24, x: -8, y: 8, z: -2 },
-
-  // Top Left Desks
-  { w: 6,  h: 2, d: 5, x: -41, y: 1, z: -15 },
-  { w: 16, h: 2, d: 5, x: -30, y: 1, z: -15 },
   
-  // Mid Left Desks
-  { w: 6,  h: 2, d: 5, x: -38, y: 1, z: 0 },
-  { w: 6,  h: 2, d: 5, x: -28, y: 1, z: 0 },
-  
-  // Round Table area (Box approx)
-  { w: 5,  h: 2, d: 5, x: -38, y: 1, z: 22 },
-  
-  // Bottom Row Desks (Left to right)
-  { w: 5,  h: 2, d: 5, x: -25, y: 1, z: 22 },
-  { w: 5,  h: 2, d: 5, x: -15, y: 1, z: 22 },
-  { w: 5,  h: 2, d: 5, x: -5,  y: 1, z: 22 },
-  { w: 5,  h: 2, d: 5, x: 5,   y: 1, z: 22 },
-  { w: 6,  h: 2, d: 5, x: 16,  y: 1, z: 22 },
-  
-  // Right Side Desks (Purple & Ohad)
-  { w: 5,  h: 2, d: 7, x: 12,  y: 1, z: -15 },
-  { w: 5,  h: 2, d: 7, x: 12,  y: 1, z: 0 },
-  { w: 4,  h: 2, d: 4, x: 30,  y: 1, z: -25 },
-  
-  // Phone Booths & Boardroom
+  // Phone Booths & Boardroom (Glass Walls)
   { w: 3,   h: 8, d: 6,   x: 28,   y: 4, z: -5 },
   { w: 0.5, h: 8, d: 20,  x: 30,   y: 4, z: 20 }, // Glass wall West
   { w: 15,  h: 8, d: 0.5, x: 37.5, y: 4, z: 10 }, // Glass wall North
-  { w: 6,   h: 2, d: 8,   x: 38,   y: 1, z: 20 }, // BR Table
   
   // Pillars
   { w: 2, h: 8, d: 2, x: -35, y: 4, z: 30 },
@@ -93,7 +68,7 @@ const COVER = [
   { w: 2, h: 8, d: 2, x: 8,   y: 4, z: 30 },
   { w: 2, h: 8, d: 2, x: 27,  y: 4, z: 30 },
   
-  // Outer Walls (Encloses the map 90x60)
+  // Outer Arena Walls
   { w: 90, h: 16, d: 1,  x: 0,   y: 8, z: -30 },
   { w: 90, h: 16, d: 1,  x: 0,   y: 8, z: 30 },
   { w: 1,  h: 16, d: 60, x: -45, y: 8, z: 0 },
@@ -162,14 +137,12 @@ function startRound() {
   roundTimer  = ROUND_TIME;
   killFeed    = [];
 
-  // Reset all players for new round
   Object.values(players).forEach(p => {
     const sp = randSpawn();
     p.health = 100; p.alive = true;
     p.x = sp.x; p.y = sp.y; p.z = sp.z;
     p.kills = 0; p.deaths = 0;
     
-    // Reset inventory
     p.inventory = { 
       rifle:  { ammo: WEAPONS.rifle.ammo,  reserve: WEAPONS.rifle.reserve }, 
       pistol: { ammo: WEAPONS.pistol.ammo, reserve: WEAPONS.pistol.reserve }, 
@@ -184,10 +157,7 @@ function startRound() {
   roundTick = setInterval(() => {
     roundTimer--;
     io.emit('timerUpdate', roundTimer);
-    
-    if (roundTimer <= 0) {
-      endRound();
-    }
+    if (roundTimer <= 0) endRound();
   }, 1000);
 }
 
@@ -195,7 +165,6 @@ function endRound() {
   if (roundTick) { clearInterval(roundTick); roundTick = null; }
   roundActive = false;
 
-  // Find the winner (highest kills)
   let winnerName = "NOBODY";
   let highestKills = -1;
   Object.values(players).forEach(p => {
@@ -205,10 +174,8 @@ function endRound() {
     }
   });
 
-  // Tell clients the round is over
   io.emit('matchOver', { winner: winnerName });
 
-  // Wait 5 seconds, then restart
   setTimeout(() => {
     if (Object.keys(players).length > 0) startRound();
   }, 5000);
@@ -247,20 +214,14 @@ function tickBots() {
       bot.rotY = Math.atan2(dx, dz);
     }
     
-    // Bot Shooting Logic (FFA: target ANY alive player that isn't itself)
     const now = Date.now();
     if (now - bot.lastShot > 1200) {
       const target = Object.values(players).find(p => p.alive && p.id !== bot.id);
-      
       if (target && Math.hypot(target.x - bot.x, target.z - bot.z) < 30) {
         bot.lastShot = now;
-        
-        // Aim direction
         let aimX = (target.x - bot.x) / 30;
         let aimY = 0;
         let aimZ = (target.z - bot.z) / 30;
-        
-        // Broadcast shot
         io.emit('playerShot', { id: bot.id, x: bot.x, y: bot.y, z: bot.z, dx: aimX, dy: aimY, dz: aimZ, skin: bot.skin });
       }
     }
@@ -278,11 +239,8 @@ io.on('connection', socket => {
 
   socket.on('join', ({ name, skin, withBots }) => {
     const sp = randSpawn();
-    
     players[socket.id] = {
-      id: socket.id, 
-      name: name || 'Player', 
-      skin: skin || 0,
+      id: socket.id, name: name || 'Player', skin: skin || 0,
       health: 100, alive: true, x: sp.x, y: sp.y, z: sp.z, rotY: 0,
       kills: 0, deaths: 0, weapon: 'rifle', ammo: 30, reserve: 90, lastShot: 0,
       inventory: { 
@@ -329,12 +287,10 @@ io.on('connection', socket => {
     let hitP = null, minDist = Infinity;
 
     Object.values(players).forEach(t => {
-      // Free For All: Don't shoot yourself, but everyone else is fair game!
       if (t.id === socket.id || !t.alive) return;
-      
       const dx = t.x - ox, dy = (t.y + 1) - oy, dz = t.z - oz;
       const dot = dx*dirX + dy*dirY + dz*dirZ;
-      if (dot < 0 || dot > bDist) return; // Blocked by wall/box
+      if (dot < 0 || dot > bDist) return; 
       
       const perpX = ox + dirX*dot - t.x, perpY = oy + dirY*dot - (t.y+1), perpZ = oz + dirZ*dot - t.z;
       
@@ -348,9 +304,7 @@ io.on('connection', socket => {
       io.emit('playerHit', { id: hitP.id, health: hitP.health });
       
       if (hitP.health <= 0) {
-        hitP.alive = false; 
-        hitP.deaths++; 
-        p.kills++;
+        hitP.alive = false; hitP.deaths++; p.kills++;
         
         killFeed.unshift({ killer: p.name, victim: hitP.name, weapon: p.weapon });
         if(killFeed.length > 5) killFeed.pop();
@@ -358,13 +312,11 @@ io.on('connection', socket => {
         io.emit('playerKilled', { id: hitP.id, killFeed });
         io.emit('scoreUpdate', allPublic());
         
-        // Handle Respawn
         setTimeout(() => {
           if (!players[hitP.id]) return;
-          const sp = randSpawn(); // Safely spawn them in an edge/corner
+          const sp = randSpawn(); 
           hitP.health = 100; hitP.alive = true; hitP.x = sp.x; hitP.z = sp.z;
           
-          // Give them some ammo back on respawn
           hitP.ammo = WEAPONS[hitP.weapon].ammo;
           hitP.inventory[hitP.weapon].ammo = hitP.ammo;
           
@@ -404,8 +356,6 @@ io.on('connection', socket => {
 
   socket.on('disconnect', () => {
     delete players[socket.id];
-    
-    // Check if humans are left
     const humansLeft = Object.values(players).filter(p => !p.isBot).length;
     if (humansLeft === 0) {
       if (botInterval) clearInterval(botInterval);
@@ -413,9 +363,8 @@ io.on('connection', socket => {
       botInterval = null;
       roundTick = null;
       roundActive = false;
-      players = {}; // Clear out the bots
+      players = {}; 
     }
-    
     io.emit('playerList', allPublic());
   });
 });
