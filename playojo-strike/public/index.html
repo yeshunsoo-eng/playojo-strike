@@ -596,7 +596,8 @@ animate();
 document.getElementById('joinBtn').addEventListener('click',()=>{
   const name=document.getElementById('nameInput').value.trim()||'OJO Player';
   const bots=document.getElementById('botsCheck').checked;
-  socket.emit('join',{name,skin:selectedSkin,withBots:bots});
+  // Send the join event immediately
+  socket.emit('join',{name, skin:selectedSkin, withBots:bots});
 });
 </script>
 </body>
