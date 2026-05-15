@@ -279,15 +279,39 @@ function box(w,h,d,x,y,z,mat){
 }
 function addCol(x,y,z,w,h,d){COL.push({minX:x-w/2,maxX:x+w/2,minY:y-h/2,maxY:y+h/2,minZ:z-d/2,maxZ:z+d/2});}
 
-box(80,0.15,80, 0,0,0, sm(0x8a8878)); // Floor
-box(80,0.25,80, 0,8,0, sm(0xf0ede6)); // Ceil
-box(80,8,0.25, 0,4,-40, sm(0xf2efe8)); box(80,8,0.25, 0,4,40, sm(0xf2efe8));
-box(0.25,8,80, -40,4,0, sm(0xf2efe8)); box(0.25,8,80,40,4,0, sm(0xf2efe8));
+// Floor & Ceiling
+box(80,0.15,80, 0,0,0, sm(0x8a8878)); 
+box(80,0.25,80, 0,8,0, sm(0xf0ede6)); 
 
-const pillarM=sm(0xe8e4dc);
-[[-20,-20],[-20,20],[20,-20],[20,20]].forEach(([x,z])=>{
-  box(1.1,8,1.1, x,4,z, pillarM); addCol(x,4,z, 1.1,8,1.1);
-});
+// Outer Walls (Visual + Collision)
+const wallM = sm(0xf2efe8);
+box(80,8,0.25, 0,4,-40, wallM); addCol(0,4,-40, 80,8,0.5); // North
+box(80,8,0.25, 0,4,40, wallM);  addCol(0,4,40, 80,8,0.5);  // South
+box(0.25,8,80, -40,4,0, wallM); addCol(-40,4,0, 0.5,8,80); // West
+box(0.25,8,80, 40,4,0, wallM);  addCol(40,4,0, 0.5,8,80);  // East
+
+// ─── OFFICE FURNITURE (Synced with Server Hitboxes!) ───
+const woodM = sm(0xa08b70);
+const cabM  = sm(0x778899);
+const darkM = sm(0x333333);
+const glassM= sm(0x88ccff);
+
+// 1 & 2. Desk Pods (Left and Right)
+box(4, 1.2, 4, -8, 0.6, 0, woodM); box(3.8, 0.8, 0.2, -8, 1.6, 0, glassM); addCol(-8, 1, 0, 4, 2, 4);
+box(4, 1.2, 4, 8, 0.6, 0, woodM);  box(3.8, 0.8, 0.2, 8, 1.6, 0, glassM);  addCol(8, 1, 0, 4, 2, 4);
+
+// 3 & 4. Filing Cabinets / Server Racks (North and South)
+box(2, 3, 8, 0, 1.5, -10, cabM); addCol(0, 1.5, -10, 2, 3, 8);
+box(2, 3, 8, 0, 1.5, 10, cabM);  addCol(0, 1.5, 10, 2, 3, 8);
+
+// 5 & 6. Conference Tables (Far Left and Far Right)
+box(8, 0.1, 2, -12, 1.45, -6, woodM); box(6, 1.4, 1, -12, 0.7, -6, darkM); addCol(-12, 0.75, -6, 8, 1.5, 2);
+box(8, 0.1, 2, 12, 1.45, 6, woodM);   box(6, 1.4, 1, 12, 0.7, 6, darkM);   addCol(12, 0.75, 6, 8, 1.5, 2);
+
+// 7 & 8. Pillars
+const pillarM = sm(0xe8e4dc);
+box(1.1, 8, 1.1, -20, 4, -20, pillarM); addCol(-20, 4, -20, 1.1, 8, 1.1);
+box(1.1, 8, 1.1, 20, 4, 20, pillarM);   addCol(20, 4, 20, 1.1, 8, 1.1);
 
 // Wall Banners
 const TL=new THREE.TextureLoader();
@@ -315,9 +339,18 @@ function makePMesh(name,skinIdx){
 }
 
 // ─── LOGIC & INPUT ───
-const keys={};
+function overlaps(x,y,z,c){
+  const fy=y-PH;
+  return x+PR>c.minX&&x-PR<c.maxX&&fy<c.maxY&&fy+PH>c.minY&&z+PR>c.minZ&&z-PR<c.maxZ;
+}
+function slide(pos,dx,dy,dz){
+  if(!COL.some(c=>overlaps(pos.x+dx,pos.y,pos.z,c))) pos.x+=dx; else vel.x=0;
+  if(!COL.some(c=>overlaps(pos.x,pos.y,pos.z+dz,c))) pos.z+=dz; else vel.z=0;
+  if(!COL.some(c=>overlaps(pos.x,pos.y+dy,pos.z,c))) pos.y+=dy;
+  else{if(vel.y<0)onGround=true;vel.y=0;}
+}
 
-// KEYBOARD
+const keys={};
 window.addEventListener('keydown',e=>{
     keys[e.code]=true;
     if(!inGame) return;
@@ -496,8 +529,8 @@ function animate(){
     const spd=(keys['ShiftLeft'])?RN:WK;
     vel.x=md.x*spd; vel.z=md.z*spd;
     
-    // Simplistic collision block
-    cam.position.x+=vel.x*dt; cam.position.z+=vel.z*dt; cam.position.y+=vel.y*dt;
+    // Slide / Collision Logic
+    slide(cam.position, vel.x*dt, vel.y*dt, vel.z*dt);
     if(cam.position.y<1.7){cam.position.y=1.7; vel.y=0; onGround=true;}
     
     cam.rotation.set(pitch,yaw,0,'YXZ');
