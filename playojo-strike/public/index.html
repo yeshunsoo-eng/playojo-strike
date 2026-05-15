@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PlayOJO Strike - FFA</title>
+<title>PlayOJO Strike - FFA Office Map</title>
 <style>
     /* ── RESET & BASE ── */
     *{margin:0;padding:0;box-sizing:border-box}
@@ -67,7 +67,6 @@
     #hp-num{font-size:2rem;font-weight:900;color:#fff;line-height:1}
     #hp-bar{width:110px;height:3px;background:#333;margin:4px 0 6px}
     #hp-fill{height:100%;background:#33cc55;transition:.2s}
-    #armor-row{font-size:.78rem;color:#999;letter-spacing:1px}
 
     #br{position:absolute;bottom:0;right:0;padding:12px 18px;
       background:linear-gradient(to top,#000c,transparent);text-align:right}
@@ -130,7 +129,6 @@
 </head>
 <body>
 
-<!-- ── LOBBY ── -->
 <div id="lobby">
   <div id="lobby-left">
     <img src="/logo_ojo.png" alt="PlayOJO">
@@ -277,20 +275,21 @@ function box(w,h,d,x,y,z,mat){
   const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
   m.position.set(x,y,z); scene.add(m); return m;
 }
+// Collision builder matches server Hitboxes precisely
 function addCol(x,y,z,w,h,d){COL.push({minX:x-w/2,maxX:x+w/2,minY:y-h/2,maxY:y+h/2,minZ:z-d/2,maxZ:z+d/2});}
 
-// Solid Floor & Ceiling
-box(80,0.15,80, 0,0,0, sm(0x8a8878)); 
-box(80,0.25,80, 0,16,0, sm(0xf0ede6)); 
+// Floor & Ceiling (Map is 90x60)
+box(90,0.15,60, 0,0,0, sm(0x8a8878)); 
+box(90,0.25,60, 0,16,0, sm(0xf0ede6)); 
 
-// Big Square Solid Walls (Floor to Ceiling, Enclosed)
+// Outer Walls (Encloses the map 90x60 exactly)
 const wallM = sm(0xf2efe8);
-box(80,16,1, 0,8,-40, wallM); addCol(0,8,-40, 80,16,1); // North Wall
-box(80,16,1, 0,8,40, wallM);  addCol(0,8,40, 80,16,1);  // South Wall
-box(1,16,80, -40,8,0, wallM); addCol(-40,8,0, 1,16,80); // West Wall
-box(1,16,80, 40,8,0, wallM);  addCol(40,8,0, 1,16,80);  // East Wall
+box(90,16,1, 0,8,-30, wallM); addCol(0,8,-30, 90,16,1); // North Wall
+box(90,16,1, 0,8,30, wallM);  addCol(0,8,30, 90,16,1);  // South Wall
+box(1,16,60, -45,8,0, wallM); addCol(-45,8,0, 1,16,60); // West Wall
+box(1,16,60, 45,8,0, wallM);  addCol(45,8,0, 1,16,60);  // East Wall
 
-// Plastering Banners on the huge solid walls
+// Banners on Outer Walls
 const TL=new THREE.TextureLoader();
 function createBanner(url,w,h,x,y,z,ry){
   TL.load(url,tex=>{
@@ -299,67 +298,79 @@ function createBanner(url,w,h,x,y,z,ry){
     m.position.set(x,y,z); m.rotation.y=ry; scene.add(m);
   });
 }
-createBanner('logo_ojo.png', 30, 12, 0, 7, -39.4, 0);            // North Banner
-createBanner('logo_ojo.png', 30, 12, 0, 7, 39.4, Math.PI);       // South Banner
-createBanner('logo_owl.jpg', 16, 16, 39.4, 7, 0, -Math.PI/2);    // East Banner
-createBanner('logo_owl.jpg', 16, 16, -39.4, 7, 0, Math.PI/2);    // West Banner
+createBanner('logo_ojo.png', 30, 10, 0, 6, -29.4, 0);            // North Banner
+createBanner('logo_ojo.png', 30, 10, 0, 6, 29.4, Math.PI);       // South Banner
+createBanner('logo_owl.jpg', 12, 12, 44.4, 6, 0, -Math.PI/2);    // East Banner
+createBanner('logo_owl.jpg', 12, 12, -44.4, 6, 0, Math.PI/2);    // West Banner
 
-// ─── OFFICE FURNITURE (Synced with Server Hitboxes!) ───
-const woodM = sm(0xbb9977);
+
+// ─── OFFICE FURNITURE ───
 const deskLegM = sm(0x222222);
-const glassM = sm(0x88aaff);
 const monM = sm(0x111111);
-const cabM = sm(0x333344);
 const chairM = sm(0x555555);
 
-// Furniture builder functions matching server Cover array exactly
-function makeDeskCluster(cx, cz) {
-    // Table top
-    box(4, 0.1, 4, cx, 0.75, cz, woodM);
-    // Legs
-    box(0.1, 0.75, 0.1, cx-1.9, 0.375, cz-1.9, deskLegM); box(0.1, 0.75, 0.1, cx+1.9, 0.375, cz-1.9, deskLegM);
-    box(0.1, 0.75, 0.1, cx-1.9, 0.375, cz+1.9, deskLegM); box(0.1, 0.75, 0.1, cx+1.9, 0.375, cz+1.9, deskLegM);
-    // Dividers
-    box(3.8, 0.6, 0.1, cx, 1.1, cz, glassM); box(0.1, 0.6, 3.8, cx, 1.1, cz, glassM);
-    // Monitors
-    box(0.8, 0.5, 0.1, cx-1, 1.1, cz-0.2, monM); box(0.8, 0.5, 0.1, cx+1, 1.1, cz-0.2, monM);
-    box(0.8, 0.5, 0.1, cx-1, 1.1, cz+0.2, monM); box(0.8, 0.5, 0.1, cx+1, 1.1, cz+0.2, monM);
-    // Exact Server Hitbox matching
-    addCol(cx, 1, cz, 4, 2, 4);
+// Helper to build 3D desks based on your color coding
+function buildDesk(cx, cz, w, d, hexCol) {
+    box(w, 0.1, d, cx, 0.75, cz, sm(hexCol)); // Colored Table Top
+    // Table Legs
+    box(0.1, 0.75, 0.1, cx - w/2 + 0.1, 0.375, cz - d/2 + 0.1, deskLegM);
+    box(0.1, 0.75, 0.1, cx + w/2 - 0.1, 0.375, cz - d/2 + 0.1, deskLegM);
+    box(0.1, 0.75, 0.1, cx - w/2 + 0.1, 0.375, cz + d/2 - 0.1, deskLegM);
+    box(0.1, 0.75, 0.1, cx + w/2 - 0.1, 0.375, cz + d/2 - 0.1, deskLegM);
+    
+    // Add PC Monitors randomly for cover
+    if(w > 3) {
+      box(0.8, 0.5, 0.1, cx-1, 1.1, cz, monM); 
+      box(0.8, 0.5, 0.1, cx+1, 1.1, cz, monM);
+    }
+    addCol(cx, 1, cz, w, 2, d);
 }
 
-function makeServerRack(cx, cz) {
-    box(2, 3, 8, cx, 1.5, cz, cabM);
-    // Rack detail lines
-    box(2.05, 0.1, 7.8, cx, 0.5, cz, monM); box(2.05, 0.1, 7.8, cx, 1.0, cz, monM);
-    box(2.05, 0.1, 7.8, cx, 1.5, cz, monM); box(2.05, 0.1, 7.8, cx, 2.0, cz, monM);
-    box(2.05, 0.1, 7.8, cx, 2.5, cz, monM);
-    // Exact Server Hitbox matching
-    addCol(cx, 1.5, cz, 2, 3, 8);
-}
+// 1. Top Left Blocks
+buildDesk(-41, -15, 6, 5, 0xffee00); // Yellow (Wesley/Madalina)
+buildDesk(-30, -15, 16, 5, 0x00cc44); // Green Block
 
-function makeConferenceTable(cx, cz) {
-    box(8, 0.1, 2, cx, 0.75, cz, sm(0x995533));
-    box(6, 0.75, 1, cx, 0.375, cz, deskLegM);
-    // Office Chairs around table
-    box(0.5, 0.5, 0.5, cx-2, 0.25, cz-1.5, chairM); box(0.5, 0.5, 0.5, cx+2, 0.25, cz+1.5, chairM);
-    box(0.5, 0.5, 0.5, cx, 0.25, cz-1.5, chairM);   box(0.5, 0.5, 0.5, cx, 0.25, cz+1.5, chairM);
-    // Exact Server Hitbox matching
-    addCol(cx, 0.75, cz, 8, 1.5, 2);
-}
+// 2. Mid Left Blocks
+buildDesk(-38, 0, 6, 5, 0xffee00); // Yellow
+buildDesk(-28, 0, 6, 5, 0xee2222); // Red
 
-// Instantiate the obstacles using our detailed functions
-makeDeskCluster(-8, 0); 
-makeDeskCluster(8, 0); 
-makeServerRack(0, -10); 
-makeServerRack(0, 10); 
-makeConferenceTable(-12, -6); 
-makeConferenceTable(12, 6);
+// 3. Round Table Area (Bottom Left)
+const cylM = sm(0xffffff);
+const roundTable = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 0.1, 16), cylM);
+roundTable.position.set(-38, 0.75, 22); scene.add(roundTable);
+box(0.5, 0.75, 0.5, -38, 0.375, 22, deskLegM); // Center leg
+addCol(-38, 1, 22, 5, 2, 5); // Box collision around round table
 
-// Pillars (Keep existing hitboxes)
-const pillarMat = sm(0xe8e4dc);
-box(1.1, 16, 1.1, -20, 8, -20, pillarMat); addCol(-20, 4, -20, 1.1, 8, 1.1);
-box(1.1, 16, 1.1, 20, 8, 20, pillarMat);   addCol(20, 4, 20, 1.1, 8, 1.1);
+// 4. Bottom Row Desks
+buildDesk(-25, 22, 5, 5, 0x22eeee); // Cyan
+buildDesk(-15, 22, 5, 5, 0x1144ff); // Blue
+buildDesk(-5,  22, 5, 5, 0xff00ff); // Magenta
+buildDesk( 5,  22, 5, 5, 0x111166); // Dark Blue
+buildDesk( 16, 22, 6, 5, 0x00ccff); // Light Blue
+
+// 5. Mid Right Blocks (Purple)
+buildDesk(12, -15, 5, 7, 0x8a2be2); // Top Purple
+buildDesk(12, 0,   5, 7, 0x8a2be2); // Bot Purple
+
+// 6. Top Right Solo Desk (Ohad)
+buildDesk(30, -25, 4, 4, 0xaa22ff); 
+
+// 7. Phone Booths
+box(3, 8, 6, 28, 4, -5, sm(0xdddddd)); 
+addCol(28, 4, -5, 3, 8, 6);
+
+// 8. Boardroom
+box(0.5, 8, 20, 30, 4, 20, sm(0x88aaff)); addCol(30, 4, 20, 0.5, 8, 20); // Glass Wall West
+box(15, 8, 0.5, 37.5, 4, 10, sm(0x88aaff)); addCol(37.5, 4, 10, 15, 8, 0.5); // Glass Wall North
+buildDesk(38, 20, 6, 8, 0xffffff); // Big Boardroom table
+
+// 9. Pillars (Bottom Edge)
+const plM = sm(0x999999);
+box(2, 8, 2, -35, 4, 30, plM); addCol(-35, 4, 30, 2, 8, 2);
+box(2, 8, 2, -10, 4, 30, plM); addCol(-10, 4, 30, 2, 8, 2);
+box(2, 8, 2, 8,   4, 30, plM); addCol(8, 4, 30, 2, 8, 2);
+box(2, 8, 2, 27,  4, 30, plM); addCol(27, 4, 30, 2, 8, 2);
+
 
 // Player Meshes
 const pMeshes={};
@@ -374,15 +385,16 @@ function makePMesh(name,skinIdx){
 }
 
 // ─── LOGIC & INPUT ───
-function overlaps(x,y,z,c){
-  const fy=y-PH;
-  return x+PR>c.minX&&x-PR<c.maxX&&fy<c.maxY&&fy+PH>c.minY&&z+PR>c.minZ&&z-PR<c.maxZ;
-}
 function slide(pos,dx,dy,dz){
   if(!COL.some(c=>overlaps(pos.x+dx,pos.y,pos.z,c))) pos.x+=dx; else vel.x=0;
   if(!COL.some(c=>overlaps(pos.x,pos.y,pos.z+dz,c))) pos.z+=dz; else vel.z=0;
   if(!COL.some(c=>overlaps(pos.x,pos.y+dy,pos.z,c))) pos.y+=dy;
   else{if(vel.y<0)onGround=true;vel.y=0;}
+}
+
+function overlaps(x,y,z,c){
+  const fy=y-PH;
+  return x+PR>c.minX&&x-PR<c.maxX&&fy<c.maxY&&fy+PH>c.minY&&z+PR>c.minZ&&z-PR<c.maxZ;
 }
 
 const keys={};
