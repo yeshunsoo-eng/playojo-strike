@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PlayOJO Strike - FFA Office Map</title>
+<title>PlayOJO Strike - FFA</title>
 <style>
     /* ── RESET & BASE ── */
     *{margin:0;padding:0;box-sizing:border-box}
@@ -282,6 +282,11 @@ function addCol(x,y,z,w,h,d){COL.push({minX:x-w/2,maxX:x+w/2,minY:y-h/2,maxY:y+h
 box(90,0.15,60, 0,0,0, sm(0x8a8878)); 
 box(90,0.25,60, 0,16,0, sm(0xf0ede6)); 
 
+// ── CENTRAL CORE ('X' BOX) ──
+const coreM = sm(0xdadada); // Light grey plaster
+box(20, 16, 24, -8, 8, -2, coreM);
+addCol(-8, 8, -2, 20, 16, 24);
+
 // Outer Walls (Encloses the map 90x60 exactly)
 const wallM = sm(0xf2efe8);
 box(90,16,1, 0,8,-30, wallM); addCol(0,8,-30, 90,16,1); // North Wall
@@ -289,7 +294,7 @@ box(90,16,1, 0,8,30, wallM);  addCol(0,8,30, 90,16,1);  // South Wall
 box(1,16,60, -45,8,0, wallM); addCol(-45,8,0, 1,16,60); // West Wall
 box(1,16,60, 45,8,0, wallM);  addCol(45,8,0, 1,16,60);  // East Wall
 
-// Banners on Outer Walls
+// Plastering Banners
 const TL=new THREE.TextureLoader();
 function createBanner(url,w,h,x,y,z,ry){
   TL.load(url,tex=>{
@@ -298,10 +303,17 @@ function createBanner(url,w,h,x,y,z,ry){
     m.position.set(x,y,z); m.rotation.y=ry; scene.add(m);
   });
 }
-createBanner('logo_ojo.png', 30, 10, 0, 6, -29.4, 0);            // North Banner
-createBanner('logo_ojo.png', 30, 10, 0, 6, 29.4, Math.PI);       // South Banner
-createBanner('logo_owl.jpg', 12, 12, 44.4, 6, 0, -Math.PI/2);    // East Banner
-createBanner('logo_owl.jpg', 12, 12, -44.4, 6, 0, Math.PI/2);    // West Banner
+// Banners on the Outer Walls
+createBanner('logo_ojo.png', 30, 10, 0, 6, -29.4, 0);            // North Outer
+createBanner('logo_ojo.png', 30, 10, 0, 6, 29.4, Math.PI);       // South Outer
+createBanner('logo_owl.jpg', 12, 12, 44.4, 6, 0, -Math.PI/2);    // East Outer
+createBanner('logo_owl.jpg', 12, 12, -44.4, 6, 0, Math.PI/2);    // West Outer
+
+// Banners on the NEW CENTRAL CORE ('X' Block)
+createBanner('logo_ojo.png', 12, 6, -8, 6, -14.1, Math.PI); // Core North Face
+createBanner('logo_ojo.png', 12, 6, -8, 6, 10.1, 0);        // Core South Face
+createBanner('logo_owl.jpg', 8, 8, 2.1, 6, -2, Math.PI/2);  // Core East Face
+createBanner('logo_owl.jpg', 8, 8, -18.1, 6, -2, -Math.PI/2); // Core West Face
 
 
 // ─── OFFICE FURNITURE ───
@@ -309,7 +321,6 @@ const deskLegM = sm(0x222222);
 const monM = sm(0x111111);
 const chairM = sm(0x555555);
 
-// Helper to build 3D desks based on your color coding
 function buildDesk(cx, cz, w, d, hexCol) {
     box(w, 0.1, d, cx, 0.75, cz, sm(hexCol)); // Colored Table Top
     // Table Legs
@@ -318,7 +329,7 @@ function buildDesk(cx, cz, w, d, hexCol) {
     box(0.1, 0.75, 0.1, cx - w/2 + 0.1, 0.375, cz + d/2 - 0.1, deskLegM);
     box(0.1, 0.75, 0.1, cx + w/2 - 0.1, 0.375, cz + d/2 - 0.1, deskLegM);
     
-    // Add PC Monitors randomly for cover
+    // Add PC Monitors
     if(w > 3) {
       box(0.8, 0.5, 0.1, cx-1, 1.1, cz, monM); 
       box(0.8, 0.5, 0.1, cx+1, 1.1, cz, monM);
@@ -327,7 +338,7 @@ function buildDesk(cx, cz, w, d, hexCol) {
 }
 
 // 1. Top Left Blocks
-buildDesk(-41, -15, 6, 5, 0xffee00); // Yellow (Wesley/Madalina)
+buildDesk(-41, -15, 6, 5, 0xffee00); // Yellow
 buildDesk(-30, -15, 16, 5, 0x00cc44); // Green Block
 
 // 2. Mid Left Blocks
@@ -339,7 +350,7 @@ const cylM = sm(0xffffff);
 const roundTable = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 0.1, 16), cylM);
 roundTable.position.set(-38, 0.75, 22); scene.add(roundTable);
 box(0.5, 0.75, 0.5, -38, 0.375, 22, deskLegM); // Center leg
-addCol(-38, 1, 22, 5, 2, 5); // Box collision around round table
+addCol(-38, 1, 22, 5, 2, 5); 
 
 // 4. Bottom Row Desks
 buildDesk(-25, 22, 5, 5, 0x22eeee); // Cyan
