@@ -46,15 +46,42 @@ const WEAPONS = {
   sniper: { damage:100, fireRate:1200, ammo:5,  reserve:20,  reloadTime:3000 }
 };
 
+// Server-side hitboxes for the custom Office layout
 const COVER = [
-  { w:4, h:2, d:4, x:-8, y:1, z:0 },
-  { w:4, h:2, d:4, x: 8, y:1, z:0 },
-  { w:2, h:3, d:8, x: 0, y:1.5, z:-10 },
-  { w:2, h:3, d:8, x: 0, y:1.5, z: 10 },
-  { w:8, h:1.5, d:2, x:-12, y:0.75, z:-6 },
-  { w:8, h:1.5, d:2, x: 12, y:0.75, z: 6 },
-  { w:1.1, h:8, d:1.1, x:-20, y:4, z:-20 }, // Pillars
-  { w:1.1, h:8, d:1.1, x:20, y:4, z:20 }
+  // Top Left Desks
+  { w:6,  h:2, d:5, x:-41, y:1, z:-15 },
+  { w:16, h:2, d:5, x:-30, y:1, z:-15 },
+  // Mid Left Desks
+  { w:6,  h:2, d:5, x:-38, y:1, z:0 },
+  { w:6,  h:2, d:5, x:-28, y:1, z:0 },
+  // Round Table area (Box approx)
+  { w:5,  h:2, d:5, x:-38, y:1, z:22 },
+  // Bottom Row Desks (Left to right)
+  { w:5,  h:2, d:5, x:-25, y:1, z:22 },
+  { w:5,  h:2, d:5, x:-15, y:1, z:22 },
+  { w:5,  h:2, d:5, x:-5,  y:1, z:22 },
+  { w:5,  h:2, d:5, x:5,   y:1, z:22 },
+  { w:6,  h:2, d:5, x:16,  y:1, z:22 },
+  // Right Side Desks (Purple & Ohad)
+  { w:5,  h:2, d:7, x:12,  y:1, z:-15 },
+  { w:5,  h:2, d:7, x:12,  y:1, z:0 },
+  { w:4,  h:2, d:4, x:30,  y:1, z:-25 },
+  // Phone Booths
+  { w:3,  h:8, d:6, x:28,  y:4, z:-5 },
+  // Boardroom
+  { w:0.5,h:8, d:20, x:30, y:4, z:20 }, // Glass wall West
+  { w:15, h:8, d:0.5,x:37.5,y:4, z:10 }, // Glass wall North
+  { w:6,  h:2, d:8, x:38,  y:1, z:20 }, // BR Table
+  // Pillars
+  { w:2,  h:8, d:2, x:-35, y:4, z:30 },
+  { w:2,  h:8, d:2, x:-10, y:4, z:30 },
+  { w:2,  h:8, d:2, x:8,   y:4, z:30 },
+  { w:2,  h:8, d:2, x:27,  y:4, z:30 },
+  // Outer Walls (Encloses the map 90x60)
+  { w:90, h:16, d:1, x:0, y:8, z:-30 },
+  { w:90, h:16, d:1, x:0, y:8, z:30 },
+  { w:1, h:16, d:60, x:-45, y:8, z:0 },
+  { w:1, h:16, d:60, x:45, y:8, z:0 }
 ];
 
 // ── State ────────────────────────────────────────────────
