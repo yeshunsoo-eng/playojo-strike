@@ -278,17 +278,23 @@ function box(w,h,d,x,y,z,mat){
 // Collision builder matches server Hitboxes precisely
 function addCol(x,y,z,w,h,d){COL.push({minX:x-w/2,maxX:x+w/2,minY:y-h/2,maxY:y+h/2,minZ:z-d/2,maxZ:z+d/2});}
 
+// Materials
+const coreM = sm(0xdadada); // Light grey plaster
+const wallM = sm(0xf2efe8);
+const deskLegM = sm(0x222222);
+const monM = sm(0x111111);
+const chairM = sm(0x555555);
+const roomM = sm(0xe0e0e0);
+
 // Floor & Ceiling (Map is 90x60)
 box(90,0.15,60, 0,0,0, sm(0x8a8878)); 
 box(90,0.25,60, 0,16,0, sm(0xf0ede6)); 
 
 // ── CENTRAL CORE ('X' BOX) ──
-const coreM = sm(0xdadada); // Light grey plaster
 box(20, 16, 24, -8, 8, -2, coreM);
 addCol(-8, 8, -2, 20, 16, 24);
 
 // Outer Walls (Encloses the map 90x60 exactly)
-const wallM = sm(0xf2efe8);
 box(90,16,1, 0,8,-30, wallM); addCol(0,8,-30, 90,16,1); // North Wall
 box(90,16,1, 0,8,30, wallM);  addCol(0,8,30, 90,16,1);  // South Wall
 box(1,16,60, -45,8,0, wallM); addCol(-45,8,0, 1,16,60); // West Wall
@@ -317,10 +323,6 @@ createBanner('logo_owl.jpg', 8, 8, -18.1, 6, -2, -Math.PI/2); // Core West Face
 
 
 // ─── OFFICE FURNITURE ───
-const deskLegM = sm(0x222222);
-const monM = sm(0x111111);
-const chairM = sm(0x555555);
-
 function buildDesk(cx, cz, w, d, hexCol) {
     box(w, 0.1, d, cx, 0.75, cz, sm(hexCol)); // Colored Table Top
     // Table Legs
@@ -352,6 +354,13 @@ roundTable.position.set(-38, 0.75, 22); scene.add(roundTable);
 box(0.5, 0.75, 0.5, -38, 0.375, 22, deskLegM); // Center leg
 addCol(-38, 1, 22, 5, 2, 5); 
 
+// Round Table Enclosing Walls & Door
+box(12, 8, 1, -38, 4, 28, roomM); addCol(-38, 4, 28, 12, 8, 1); // South Wall
+box(1, 8, 12, -32.5, 4, 22, roomM); addCol(-32.5, 4, 22, 1, 8, 12); // East Wall
+box(3.5, 8, 1, -42.25, 4, 16, roomM); addCol(-42.25, 4, 16, 3.5, 8, 1); // North Wall (Left)
+box(3.5, 8, 1, -33.75, 4, 16, roomM); addCol(-33.75, 4, 16, 3.5, 8, 1); // North Wall (Right)
+box(0.2, 8, 4, -39.6, 4, 18, sm(0x8b5a2b)); addCol(-39.6, 4, 18, 0.2, 8, 4); // Wooden Door (Open)
+
 // 4. Bottom Row Desks
 buildDesk(-25, 22, 5, 5, 0x22eeee); // Cyan
 buildDesk(-15, 22, 5, 5, 0x1144ff); // Blue
@@ -366,12 +375,21 @@ buildDesk(12, 0,   5, 7, 0x8a2be2); // Bot Purple
 // 6. Top Right Solo Desk (Ohad)
 buildDesk(30, -25, 4, 4, 0xaa22ff); 
 
+// Ohad's Enclosing Walls & Door
+box(12, 8, 1, 30, 4, -19, roomM); addCol(30, 4, -19, 12, 8, 1); // South Wall
+box(12, 8, 1, 30, 4, -29.5, roomM); addCol(30, 4, -29.5, 12, 8, 1); // North Wall
+box(1, 8, 3, 24.5, 4, -20.5, roomM); addCol(24.5, 4, -20.5, 1, 8, 3); // West Wall (Bottom)
+box(1, 8, 3, 24.5, 4, -28, roomM); addCol(24.5, 4, -28, 1, 8, 3); // West Wall (Top)
+box(4, 8, 0.2, 26.5, 4, -22.1, sm(0x8b5a2b)); addCol(26.5, 4, -22.1, 4, 8, 0.2); // Wooden Door (Open)
+
 // 7. Phone Booths
 box(3, 8, 6, 28, 4, -5, sm(0xdddddd)); 
 addCol(28, 4, -5, 3, 8, 6);
 
 // 8. Boardroom
-box(0.5, 8, 20, 30, 4, 20, sm(0x88aaff)); addCol(30, 4, 20, 0.5, 8, 20); // Glass Wall West
+box(0.5, 8, 7, 30, 4, 13.5, sm(0x88aaff)); addCol(30, 4, 13.5, 0.5, 8, 7); // Glass Wall West (Top)
+box(0.5, 8, 7, 30, 4, 26.5, sm(0x88aaff)); addCol(30, 4, 26.5, 0.5, 8, 7); // Glass Wall West (Bottom)
+box(4, 8, 0.2, 32, 4, 17.1, sm(0x555555)); addCol(32, 4, 17.1, 4, 8, 0.2); // Door (Open inward)
 box(15, 8, 0.5, 37.5, 4, 10, sm(0x88aaff)); addCol(37.5, 4, 10, 15, 8, 0.5); // Glass Wall North
 buildDesk(38, 20, 6, 8, 0xffffff); // Big Boardroom table
 
@@ -502,7 +520,6 @@ socket.on('joined', data => {
     inGame = true; 
     alive = true;
     
-    // ── THIS IS THE MISSING LINE! Teleport camera to the server's spawn point ──
     cam.position.set(data.player.x, 1.7, data.player.z);
 
     document.getElementById('lobby').style.display = 'none';
