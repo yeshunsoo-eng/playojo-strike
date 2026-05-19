@@ -57,10 +57,28 @@ const COVER = [
   // Central Core ('X' Block)
   { w: 20, h: 16, d: 24, x: -8, y: 8, z: -2 },
   
-  // Phone Booths & Boardroom (Glass Walls)
+  // Phone Booths
   { w: 3,   h: 8, d: 6,   x: 28,   y: 4, z: -5 },
-  { w: 0.5, h: 8, d: 20,  x: 30,   y: 4, z: 20 }, // Glass wall West
+  
+  // 8. Boardroom (Updated with doorway)
+  { w: 0.5, h: 8, d: 7, x: 30, y: 4, z: 13.5 }, // Glass wall West (Top)
+  { w: 0.5, h: 8, d: 7, x: 30, y: 4, z: 26.5 }, // Glass wall West (Bottom)
+  { w: 4, h: 8, d: 0.2, x: 32, y: 4, z: 17.1 }, // Open door
   { w: 15,  h: 8, d: 0.5, x: 37.5, y: 4, z: 10 }, // Glass wall North
+
+  // 3. Round Table Area (New Walls & Door)
+  { w: 12, h: 8, d: 1, x: -38, y: 4, z: 28 }, // South wall
+  { w: 1, h: 8, d: 12, x: -32.5, y: 4, z: 22 }, // East wall
+  { w: 3.5, h: 8, d: 1, x: -42.25, y: 4, z: 16 }, // North wall left
+  { w: 3.5, h: 8, d: 1, x: -33.75, y: 4, z: 16 }, // North wall right
+  { w: 0.2, h: 8, d: 4, x: -39.6, y: 4, z: 18 }, // Open door
+
+  // 6. Ohad's Solo Desk (New Walls & Door)
+  { w: 12, h: 8, d: 1, x: 30, y: 4, z: -19 }, // South wall
+  { w: 12, h: 8, d: 1, x: 30, y: 4, z: -29.5 }, // North wall
+  { w: 1, h: 8, d: 3, x: 24.5, y: 4, z: -20.5 }, // West wall bottom
+  { w: 1, h: 8, d: 3, x: 24.5, y: 4, z: -28 }, // West wall top
+  { w: 4, h: 8, d: 0.2, x: 26.5, y: 4, z: -22.1 }, // Open door
   
   // Pillars
   { w: 2, h: 8, d: 2, x: -35, y: 4, z: 30 },
