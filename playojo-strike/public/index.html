@@ -502,12 +502,23 @@ function showSB(on){
 }
 
 // LASER VISUALS
-const lasers=[];
-function spawnLaser(ox,oy,oz,dx,dy,dz,col){
-  const pts=[new THREE.Vector3(0,0,0),new THREE.Vector3(dx*6,dy*6,dz*6)];
-  const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:col}));
-  line.position.set(ox,oy,oz); scene.add(line);
-  lasers.push({m:line,dx,dy,dz,life:0.28});
+const lasers = [];
+// Create a 3D cylinder for the laser (much more visible than a 1px line)
+const laserGeom = new THREE.CylinderGeometry(0.05, 0.05, 6, 8);
+laserGeom.rotateX(Math.PI / 2); // Rotate flat so it points forward natively
+
+function spawnLaser(ox, oy, oz, dx, dy, dz, col) {
+  const mat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.9 });
+  const mesh = new THREE.Mesh(laserGeom, mat);
+  
+  mesh.position.set(ox, oy, oz);
+  
+  // Orient the 3D cylinder to point exactly where we are shooting
+  const target = new THREE.Vector3(ox + dx, oy + dy, oz + dz);
+  mesh.lookAt(target);
+  
+  scene.add(mesh);
+  lasers.push({ m: mesh, dx: dx, dy: dy, dz: dz, life: 0.35 });
 }
 
 // ─── SOCKET LISTENERS ───
@@ -599,7 +610,8 @@ function animate(){
   // Move Lasers
   for(let i=lasers.length-1;i>=0;i--){
     const l=lasers[i];l.life-=dt;
-    l.m.position.x+=l.dx*20*dt; l.m.position.y+=l.dy*20*dt; l.m.position.z+=l.dz*20*dt;
+    // Increased speed to 60 for better visibility and feel
+    l.m.position.x+=l.dx*60*dt; l.m.position.y+=l.dy*60*dt; l.m.position.z+=l.dz*60*dt;
     if(l.life<=0){scene.remove(l.m);lasers.splice(i,1);}
   }
 
@@ -630,7 +642,13 @@ function animate(){
         const euler = new THREE.Euler(pitch, yaw, 0, 'YXZ');
         const dir = new THREE.Vector3(0,0,-1).applyEuler(euler).normalize();
         
-        spawnLaser(cam.position.x, cam.position.y-0.3, cam.position.z, dir.x, dir.y, dir.z, SKINS[selectedSkin].laser);
+        // Offset the laser to spawn slightly to the right and down (like holding a gun)
+        const offset = new THREE.Vector3(0.25, -0.2, -0.6).applyEuler(euler);
+        const spawnX = cam.position.x + offset.x;
+        const spawnY = cam.position.y + offset.y;
+        const spawnZ = cam.position.z + offset.z;
+        
+        spawnLaser(spawnX, spawnY, spawnZ, dir.x, dir.y, dir.z, SKINS[selectedSkin].laser);
         socket.emit('shoot',{dirX:dir.x, dirY:dir.y, dirZ:dir.z});
         
         if(curWeapon !== 'rifle') shooting=false;
