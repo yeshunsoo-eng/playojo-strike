@@ -501,24 +501,26 @@ function showSB(on){
   } else sb.classList.remove('show');
 }
 
-// LASER VISUALS
+// ─── LASER VISUALS ───
 const lasers = [];
-// Create a 3D cylinder for the laser (much more visible than a 1px line)
 const laserGeom = new THREE.CylinderGeometry(0.05, 0.05, 6, 8);
-laserGeom.rotateX(Math.PI / 2); // Rotate flat so it points forward natively
+laserGeom.rotateX(Math.PI / 2);
 
 function spawnLaser(ox, oy, oz, dx, dy, dz, col) {
   const mat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.9 });
   const mesh = new THREE.Mesh(laserGeom, mat);
   
   mesh.position.set(ox, oy, oz);
-  
-  // Orient the 3D cylinder to point exactly where we are shooting
   const target = new THREE.Vector3(ox + dx, oy + dy, oz + dz);
   mesh.lookAt(target);
   
+  // Flag so our Raycaster doesn't accidentally hit our own flying bullets
+  mesh.userData = { isLaser: true }; 
+  
   scene.add(mesh);
-  lasers.push({ m: mesh, dx: dx, dy: dy, dz: dz, life: 0.35 });
+  
+  // Life increased to 2.0s so bullets can cross the full 90-unit map without vanishing early
+  lasers.push({ m: mesh, dx: dx, dy: dy, dz: dz, life: 2.0 }); 
 }
 
 // ─── SOCKET LISTENERS ───
@@ -610,7 +612,7 @@ function animate(){
   // Move Lasers
   for(let i=lasers.length-1;i>=0;i--){
     const l=lasers[i];l.life-=dt;
-    // Increased speed to 60 for better visibility and feel
+    // Speed set to 60 for fast bullets
     l.m.position.x+=l.dx*60*dt; l.m.position.y+=l.dy*60*dt; l.m.position.z+=l.dz*60*dt;
     if(l.life<=0){scene.remove(l.m);lasers.splice(i,1);}
   }
@@ -634,22 +636,39 @@ function animate(){
     cam.rotation.set(pitch,yaw,0,'YXZ');
     socket.emit('move',{x:cam.position.x, y:cam.position.y-1.7, z:cam.position.z, rotY:yaw});
 
-    // Shooting Logic
+    // ─── SHOOTING & RAYCASTING LOGIC ───
     if(shooting && pointerLocked){
       const now=Date.now();
       if(now-lastShot >= WRATE[curWeapon]){
         lastShot=now;
         const euler = new THREE.Euler(pitch, yaw, 0, 'YXZ');
-        const dir = new THREE.Vector3(0,0,-1).applyEuler(euler).normalize();
+        const aimDir = new THREE.Vector3(0,0,-1).applyEuler(euler).normalize();
         
-        // Offset the laser to spawn slightly to the right and down (like holding a gun)
+        // 1. Raycast to find the exact 3D pixel the crosshair is aiming at
+        const raycaster = new THREE.Raycaster(cam.position, aimDir);
+        // Ignore floating bullets when finding walls
+        const hitObjects = scene.children.filter(c => !c.userData?.isLaser);
+        const intersects = raycaster.intersectObjects(hitObjects, true);
+        
+        let hitDist = 50; // Default convergence distance if looking at the sky
+        if(intersects.length > 0) {
+            hitDist = intersects[0].distance;
+        }
+        
+        // The precise coordinate in the map where the crosshair lands
+        const targetPoint = cam.position.clone().add(aimDir.clone().multiplyScalar(hitDist));
+
+        // 2. Offset the visual spawn point down & right (like holding a gun)
         const offset = new THREE.Vector3(0.25, -0.2, -0.6).applyEuler(euler);
-        const spawnX = cam.position.x + offset.x;
-        const spawnY = cam.position.y + offset.y;
-        const spawnZ = cam.position.z + offset.z;
+        const spawnPos = cam.position.clone().add(offset);
         
-        spawnLaser(spawnX, spawnY, spawnZ, dir.x, dir.y, dir.z, SKINS[selectedSkin].laser);
-        socket.emit('shoot',{dirX:dir.x, dirY:dir.y, dirZ:dir.z});
+        // 3. Calculate trajectory from Gun Barrel directly to Target Point
+        const visualDir = new THREE.Vector3().subVectors(targetPoint, spawnPos).normalize();
+        
+        spawnLaser(spawnPos.x, spawnPos.y, spawnPos.z, visualDir.x, visualDir.y, visualDir.z, SKINS[selectedSkin].laser);
+        
+        // Send pure crosshair direction to server for perfect hit detection
+        socket.emit('shoot',{dirX:aimDir.x, dirY:aimDir.y, dirZ:aimDir.z});
         
         if(curWeapon !== 'rifle') shooting=false;
       }
