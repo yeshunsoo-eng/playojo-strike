@@ -57,6 +57,30 @@
     #dmg-flash{position:fixed;inset:0;pointer-events:none;z-index:18;opacity:0;
       background:rgba(200,0,0,0.45);transition:opacity .15s}
 
+    /* ── COUNTER STRIKE RIGHT HAND WEAPON OVERLAY ── */
+    #weapon-view-container {
+        position: absolute;
+        bottom: 0;
+        right: 2%;
+        width: 380px; 
+        z-index: 9;
+        pointer-events: none;
+        display: block;
+    }
+    #weapon-img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    /* Simple draw/equip bounce animation */
+    .weapon-draw-anim {
+        animation: weaponDrawEffect 0.18s ease-out forwards;
+    }
+    @keyframes weaponDrawEffect {
+        0% { transform: translateY(120px) rotate(5deg); }
+        100% { transform: translateY(0) rotate(0deg); }
+    }
+
     /* FFA Top Bar */
     #topbar{position:absolute;top:0;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
     #timer{background:#111;color:#fff;padding:8px 30px;font-size:1.6rem;font-weight:900;
@@ -157,9 +181,9 @@
       <div class="ctrl-row"><span class="ctrl-key">Space</span><span class="ctrl-desc">Jump</span></div>
       <div class="ctrl-row"><span class="ctrl-key">Shift</span><span class="ctrl-desc">Sprint</span></div>
       <div class="ctrl-row"><span class="ctrl-key">Tab</span><span class="ctrl-desc">Scoreboard</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">1</span><span class="ctrl-desc">Plasma Rifle</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">2</span><span class="ctrl-desc">Ion Pistol</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">3</span><span class="ctrl-desc">Void Sniper</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">1</span><span class="ctrl-desc">Machine Gun</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">2</span><span class="ctrl-desc">Pistol</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">3</span><span class="ctrl-desc">Sniper Scope</span></div>
       <div class="ctrl-row"><span class="ctrl-key">ESC</span><span class="ctrl-desc">Release Mouse</span></div>
     </div>
   </div>
@@ -180,6 +204,12 @@
     <div id="hp-num">100</div>
     <div id="hp-bar"><div id="hp-fill"></div></div>
   </div>
+
+  <!-- First Person Weapon Graphics Placement Layer -->
+  <div id="weapon-view-container">
+      <img id="weapon-img" src="assets/machine_gun.png" alt="gun">
+  </div>
+
   <div id="br">
     <div id="slot-label">PRIMARY</div>
     <div id="ammo-row">
@@ -187,10 +217,10 @@
       <span id="ammo-sep">|</span>
       <span id="ammo-res">90</span>
     </div>
-    <div id="wep-name">PLASMA RIFLE</div>
+    <div id="wep-name">MACHINE GUN</div>
   </div>
   <div id="wepbar">
-    <div class="wbtn on" data-w="rifle">1 RIFLE</div>
+    <div class="wbtn on" data-w="rifle">1 MACHINE GUN</div>
     <div class="wbtn" data-w="pistol">2 PISTOL</div>
     <div class="wbtn" data-w="sniper">3 SNIPER</div>
   </div>
@@ -244,9 +274,17 @@ let myId=null,alive=true,health=100,inGame=false,pointerLocked=false,shooting=fa
 let curWeapon='rifle',scoped=false,remotePlayers={},onGround=true;
 const vel={x:0,y:0,z:0};
 let pitch=0,yaw=0;
+
+// WEAPON METADATA DICTIONARIES SYNCHRONIZED TO SERVER SPECIFICATION
 const WRATE={rifle:150,pistol:400,sniper:1200}, NORMAL_FOV=75,SCOPE_FOV=15;
-const WLABEL={rifle:'PLASMA RIFLE',pistol:'ION PISTOL',sniper:'VOID SNIPER'};
-const WSLOT={rifle:'PRIMARY',pistol:'SECONDARY',sniper:'SNIPER'};
+const WLABEL={rifle:'MACHINE GUN',pistol:'PISTOL',sniper:'SNIPER'};
+const WSLOT={rifle:'PRIMARY',pistol:'SECONDARY',sniper:'SPECIAL'};
+const WEAPON_ASSETS={
+    rifle: 'assets/machine_gun.png',
+    pistol: 'assets/pistol.png',
+    sniper: 'assets/sniper.png'
+};
+
 const G=-20,JV=8,WK=7,RN=11,PR=0.35,PH=1.8;
 
 const canvas=document.getElementById('c');
@@ -275,32 +313,24 @@ function box(w,h,d,x,y,z,mat){
   const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
   m.position.set(x,y,z); scene.add(m); return m;
 }
-// Collision builder matches server Hitboxes precisely
 function addCol(x,y,z,w,h,d){COL.push({minX:x-w/2,maxX:x+w/2,minY:y-h/2,maxY:y+h/2,minZ:z-d/2,maxZ:z+d/2});}
 
-// Materials
-const coreM = sm(0xdadada); // Light grey plaster
+const coreM = sm(0xdadada); 
 const wallM = sm(0xf2efe8);
 const deskLegM = sm(0x222222);
 const monM = sm(0x111111);
 const chairM = sm(0x555555);
 const roomM = sm(0xe0e0e0);
 
-// Floor & Ceiling (Map is 90x60)
 box(90,0.15,60, 0,0,0, sm(0x8a8878)); 
 box(90,0.25,60, 0,16,0, sm(0xf0ede6)); 
 
-// ── CENTRAL CORE ('X' BOX) ──
-box(20, 16, 24, -8, 8, -2, coreM);
-addCol(-8, 8, -2, 20, 16, 24);
+box(20, 16, 24, -8, 8, -2, coreM); addCol(-8, 8, -2, 20, 16, 24);
+box(90,16,1, 0,8,-30, wallM); addCol(0,8,-30, 90,16,1); 
+box(90,16,1, 0,8,30, wallM);  addCol(0,8,30, 90,16,1);  
+box(1,16,60, -45,8,0, wallM); addCol(-45,8,0, 1,16,60); 
+box(1,16,60, 45,8,0, wallM);  addCol(45,8,0, 1,16,60);  
 
-// Outer Walls (Encloses the map 90x60 exactly)
-box(90,16,1, 0,8,-30, wallM); addCol(0,8,-30, 90,16,1); // North Wall
-box(90,16,1, 0,8,30, wallM);  addCol(0,8,30, 90,16,1);  // South Wall
-box(1,16,60, -45,8,0, wallM); addCol(-45,8,0, 1,16,60); // West Wall
-box(1,16,60, 45,8,0, wallM);  addCol(45,8,0, 1,16,60);  // East Wall
-
-// Plastering Banners
 const TL=new THREE.TextureLoader();
 function createBanner(url,w,h,x,y,z,ry){
   TL.load(url,tex=>{
@@ -309,29 +339,21 @@ function createBanner(url,w,h,x,y,z,ry){
     m.position.set(x,y,z); m.rotation.y=ry; scene.add(m);
   });
 }
-// Banners on the Outer Walls
-createBanner('logo_ojo.png', 30, 10, 0, 6, -29.4, 0);            // North Outer
-createBanner('logo_ojo.png', 30, 10, 0, 6, 29.4, Math.PI);       // South Outer
-createBanner('logo_owl.jpg', 12, 12, 44.4, 6, 0, -Math.PI/2);    // East Outer
-createBanner('logo_owl.jpg', 12, 12, -44.4, 6, 0, Math.PI/2);    // West Outer
+createBanner('logo_ojo.png', 30, 10, 0, 6, -29.4, 0);            
+createBanner('logo_ojo.png', 30, 10, 0, 6, 29.4, Math.PI);       
+createBanner('logo_owl.jpg', 12, 12, 44.4, 6, 0, -Math.PI/2);    
+createBanner('logo_owl.jpg', 12, 12, -44.4, 6, 0, Math.PI/2);    
+createBanner('logo_ojo.png', 12, 6, -8, 6, -14.1, Math.PI); 
+createBanner('logo_ojo.png', 12, 6, -8, 6, 10.1, 0);        
+createBanner('logo_owl.jpg', 8, 8, 2.1, 6, -2, Math.PI/2);  
+createBanner('logo_owl.jpg', 8, 8, -18.1, 6, -2, -Math.PI/2); 
 
-// Banners on the NEW CENTRAL CORE ('X' Block)
-createBanner('logo_ojo.png', 12, 6, -8, 6, -14.1, Math.PI); // Core North Face
-createBanner('logo_ojo.png', 12, 6, -8, 6, 10.1, 0);        // Core South Face
-createBanner('logo_owl.jpg', 8, 8, 2.1, 6, -2, Math.PI/2);  // Core East Face
-createBanner('logo_owl.jpg', 8, 8, -18.1, 6, -2, -Math.PI/2); // Core West Face
-
-
-// ─── OFFICE FURNITURE ───
 function buildDesk(cx, cz, w, d, hexCol) {
-    box(w, 0.1, d, cx, 0.75, cz, sm(hexCol)); // Colored Table Top
-    // Table Legs
+    box(w, 0.1, d, cx, 0.75, cz, sm(hexCol)); 
     box(0.1, 0.75, 0.1, cx - w/2 + 0.1, 0.375, cz - d/2 + 0.1, deskLegM);
     box(0.1, 0.75, 0.1, cx + w/2 - 0.1, 0.375, cz - d/2 + 0.1, deskLegM);
     box(0.1, 0.75, 0.1, cx - w/2 + 0.1, 0.375, cz + d/2 - 0.1, deskLegM);
     box(0.1, 0.75, 0.1, cx + w/2 - 0.1, 0.375, cz + d/2 - 0.1, deskLegM);
-    
-    // Add PC Monitors
     if(w > 3) {
       box(0.8, 0.5, 0.1, cx-1, 1.1, cz, monM); 
       box(0.8, 0.5, 0.1, cx+1, 1.1, cz, monM);
@@ -339,69 +361,52 @@ function buildDesk(cx, cz, w, d, hexCol) {
     addCol(cx, 1, cz, w, 2, d);
 }
 
-// 1. Top Left Blocks
-buildDesk(-41, -15, 6, 5, 0xffee00); // Yellow
-buildDesk(-30, -15, 16, 5, 0x00cc44); // Green Block
+buildDesk(-41, -15, 6, 5, 0xffee00); 
+buildDesk(-30, -15, 16, 5, 0x00cc44); 
+buildDesk(-38, 0, 6, 5, 0xffee00); 
+buildDesk(-28, 0, 6, 5, 0xee2222); 
 
-// 2. Mid Left Blocks
-buildDesk(-38, 0, 6, 5, 0xffee00); // Yellow
-buildDesk(-28, 0, 6, 5, 0xee2222); // Red
-
-// 3. Round Table Area (Bottom Left)
 const cylM = sm(0xffffff);
 const roundTable = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 0.1, 16), cylM);
 roundTable.position.set(-38, 0.75, 22); scene.add(roundTable);
-box(0.5, 0.75, 0.5, -38, 0.375, 22, deskLegM); // Center leg
+box(0.5, 0.75, 0.5, -38, 0.375, 22, deskLegM); 
 addCol(-38, 1, 22, 5, 2, 5); 
 
-// Round Table Enclosing Walls & Door
-box(12, 8, 1, -38, 4, 28, roomM); addCol(-38, 4, 28, 12, 8, 1); // South Wall
-box(1, 8, 12, -32.5, 4, 22, roomM); addCol(-32.5, 4, 22, 1, 8, 12); // East Wall
-box(3.5, 8, 1, -42.25, 4, 16, roomM); addCol(-42.25, 4, 16, 3.5, 8, 1); // North Wall (Left)
-box(3.5, 8, 1, -33.75, 4, 16, roomM); addCol(-33.75, 4, 16, 3.5, 8, 1); // North Wall (Right)
-box(0.2, 8, 4, -39.6, 4, 18, sm(0x8b5a2b)); addCol(-39.6, 4, 18, 0.2, 8, 4); // Wooden Door (Open)
+box(12, 8, 1, -38, 4, 28, roomM); addCol(-38, 4, 28, 12, 8, 1); 
+box(1, 8, 12, -32.5, 4, 22, roomM); addCol(-32.5, 4, 22, 1, 8, 12); 
+box(3.5, 8, 1, -42.25, 4, 16, roomM); addCol(-42.25, 4, 16, 3.5, 8, 1); 
+box(3.5, 8, 1, -33.75, 4, 16, roomM); addCol(-33.75, 4, 16, 3.5, 8, 1); 
+box(0.2, 8, 4, -39.6, 4, 18, sm(0x8b5a2b)); addCol(-39.6, 4, 18, 0.2, 8, 4); 
 
-// 4. Bottom Row Desks
-buildDesk(-25, 22, 5, 5, 0x22eeee); // Cyan
-buildDesk(-15, 22, 5, 5, 0x1144ff); // Blue
-buildDesk(-5,  22, 5, 5, 0xff00ff); // Magenta
-buildDesk( 5,  22, 5, 5, 0x111166); // Dark Blue
-buildDesk( 16, 22, 6, 5, 0x00ccff); // Light Blue
+buildDesk(-25, 22, 5, 5, 0x22eeee); 
+buildDesk(-15, 22, 5, 5, 0x1144ff); 
+buildDesk(-5,  22, 5, 5, 0xff00ff); 
+buildDesk( 5,  22, 5, 5, 0x111166); 
+buildDesk( 16, 22, 6, 5, 0x00ccff); 
 
-// 5. Mid Right Blocks (Purple)
-buildDesk(12, -15, 5, 7, 0x8a2be2); // Top Purple
-buildDesk(12, 0,   5, 7, 0x8a2be2); // Bot Purple
-
-// 6. Top Right Solo Desk (Ohad)
+buildDesk(12, -15, 5, 7, 0x8a2be2); 
+buildDesk(12, 0,   5, 7, 0x8a2be2); 
 buildDesk(30, -25, 4, 4, 0xaa22ff); 
 
-// Ohad's Enclosing Walls & Door
-box(12, 8, 1, 30, 4, -19, roomM); addCol(30, 4, -19, 12, 8, 1); // South Wall
-box(12, 8, 1, 30, 4, -29.5, roomM); addCol(30, 4, -29.5, 12, 8, 1); // North Wall
-box(1, 8, 3, 24.5, 4, -20.5, roomM); addCol(24.5, 4, -20.5, 1, 8, 3); // West Wall (Bottom)
-box(1, 8, 3, 24.5, 4, -28, roomM); addCol(24.5, 4, -28, 1, 8, 3); // West Wall (Top)
-box(4, 8, 0.2, 26.5, 4, -22.1, sm(0x8b5a2b)); addCol(26.5, 4, -22.1, 4, 8, 0.2); // Wooden Door (Open)
+box(12, 8, 1, 30, 4, -19, roomM); addCol(30, 4, -19, 12, 8, 1); 
+box(12, 8, 1, 30, 4, -29.5, roomM); addCol(30, 4, -29.5, 12, 8, 1); 
+box(1, 8, 3, 24.5, 4, -20.5, roomM); addCol(24.5, 4, -20.5, 1, 8, 3); 
+box(1, 8, 3, 24.5, 4, -28, roomM); addCol(24.5, 4, -28, 1, 8, 3); 
+box(4, 8, 0.2, 26.5, 4, -22.1, sm(0x8b5a2b)); addCol(26.5, 4, -22.1, 4, 8, 0.2); 
 
-// 7. Phone Booths
-box(3, 8, 6, 28, 4, -5, sm(0xdddddd)); 
-addCol(28, 4, -5, 3, 8, 6);
+box(3, 8, 6, 28, 4, -5, sm(0xdddddd)); addCol(28, 4, -5, 3, 8, 6);
+box(0.5, 8, 7, 30, 4, 13.5, sm(0x88aaff)); addCol(30, 4, 13.5, 0.5, 8, 7); 
+box(0.5, 8, 7, 30, 4, 26.5, sm(0x88aaff)); addCol(30, 4, 26.5, 0.5, 8, 7); 
+box(4, 8, 0.2, 32, 4, 17.1, sm(0x555555)); addCol(32, 4, 17.1, 4, 8, 0.2); 
+box(15, 8, 0.5, 37.5, 4, 10, sm(0x88aaff)); addCol(37.5, 4, 10, 15, 8, 0.5); 
+buildDesk(38, 20, 6, 8, 0xffffff); 
 
-// 8. Boardroom
-box(0.5, 8, 7, 30, 4, 13.5, sm(0x88aaff)); addCol(30, 4, 13.5, 0.5, 8, 7); // Glass Wall West (Top)
-box(0.5, 8, 7, 30, 4, 26.5, sm(0x88aaff)); addCol(30, 4, 26.5, 0.5, 8, 7); // Glass Wall West (Bottom)
-box(4, 8, 0.2, 32, 4, 17.1, sm(0x555555)); addCol(32, 4, 17.1, 4, 8, 0.2); // Door (Open inward)
-box(15, 8, 0.5, 37.5, 4, 10, sm(0x88aaff)); addCol(37.5, 4, 10, 15, 8, 0.5); // Glass Wall North
-buildDesk(38, 20, 6, 8, 0xffffff); // Big Boardroom table
-
-// 9. Pillars (Bottom Edge)
 const plM = sm(0x999999);
 box(2, 8, 2, -35, 4, 30, plM); addCol(-35, 4, 30, 2, 8, 2);
 box(2, 8, 2, -10, 4, 30, plM); addCol(-10, 4, 30, 2, 8, 2);
 box(2, 8, 2, 8,   4, 30, plM); addCol(8, 4, 30, 2, 8, 2);
 box(2, 8, 2, 27,  4, 30, plM); addCol(27, 4, 30, 2, 8, 2);
 
-
-// Player Meshes
 const pMeshes={};
 function makePMesh(name,skinIdx){
   const sk=SKINS[skinIdx]||SKINS[0];
@@ -450,6 +455,8 @@ document.addEventListener('mousedown',e=>{
         scoped=true; cam.fov=SCOPE_FOV; cam.updateProjectionMatrix();
         document.getElementById('scope-overlay').classList.add('on');
         document.getElementById('xhair').style.display='none';
+        // Counter-Strike Behavior: Hide weapon overlay viewport inside scoping mode
+        document.getElementById('weapon-view-container').style.display = 'none';
     }
 });
 document.addEventListener('mouseup',e=>{
@@ -458,6 +465,8 @@ document.addEventListener('mouseup',e=>{
         scoped=false; cam.fov=NORMAL_FOV; cam.updateProjectionMatrix();
         document.getElementById('scope-overlay').classList.remove('on');
         document.getElementById('xhair').style.display='block';
+        // Restore weapon overlay viewport frame when coming out of scope
+        if(alive) document.getElementById('weapon-view-container').style.display = 'block';
     }
 });
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
@@ -483,10 +492,23 @@ function sw(w){
     document.getElementById('scope-overlay').classList.remove('on');
     document.getElementById('xhair').style.display='block';
   }
+  
   curWeapon=w; socket.emit('switchWeapon',{weapon:w});
   document.querySelectorAll('.wbtn').forEach(b=>b.classList.toggle('on',b.dataset.w===w));
   document.getElementById('wep-name').textContent=WLABEL[w];
   document.getElementById('slot-label').textContent=WSLOT[w];
+  
+  // Update Right Hand Asset URL Route & trigger animation bounce
+  const wepImgEl = document.getElementById('weapon-img');
+  const wepContEl = document.getElementById('weapon-view-container');
+  
+  wepImgEl.src = WEAPON_ASSETS[w];
+  if(!scoped) {
+      wepContEl.style.display = 'block';
+      wepContEl.classList.remove('weapon-draw-anim');
+      void wepContEl.offsetWidth; // Force Reflow
+      wepContEl.classList.add('weapon-draw-anim');
+  }
 }
 
 // SCOREBOARD (FFA)
@@ -509,17 +531,11 @@ laserGeom.rotateX(Math.PI / 2);
 function spawnLaser(ox, oy, oz, dx, dy, dz, col) {
   const mat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.9 });
   const mesh = new THREE.Mesh(laserGeom, mat);
-  
   mesh.position.set(ox, oy, oz);
   const target = new THREE.Vector3(ox + dx, oy + dy, oz + dz);
   mesh.lookAt(target);
-  
-  // Flag so our Raycaster doesn't accidentally hit our own flying bullets
   mesh.userData = { isLaser: true }; 
-  
   scene.add(mesh);
-  
-  // Life increased to 2.0s so bullets can cross the full 90-unit map without vanishing early
   lasers.push({ m: mesh, dx: dx, dy: dy, dz: dz, life: 2.0 }); 
 }
 
@@ -532,12 +548,11 @@ socket.on('joined', data => {
     myId = data.id; 
     inGame = true; 
     alive = true;
-    
     cam.position.set(data.player.x, 1.7, data.player.z);
-
     document.getElementById('lobby').style.display = 'none';
     document.getElementById('hud').style.display = 'block';
     document.getElementById('lockprompt').style.display = 'none';
+    document.getElementById('weapon-view-container').style.display = 'block';
 });
 
 socket.on('playerList',data=>{
@@ -573,9 +588,13 @@ socket.on('playerHit',({id,health:hp})=>{
 });
 
 socket.on('playerKilled',({id,killFeed})=>{
-  if(id===myId){ alive=false; document.getElementById('deathscreen').style.display='flex'; }
+  if(id===myId){ 
+     alive=false; 
+     document.getElementById('deathscreen').style.display='flex'; 
+     document.getElementById('weapon-view-container').style.display = 'none';
+  }
   if(pMeshes[id]) pMeshes[id].visible=false;
-  document.getElementById('kfeed').innerHTML=killFeed.slice(0,5).map(k=>`<div class="kfe"><span class="kfk">${k.killer}</span> [${k.weapon}] <span class="kfv">${k.victim}</span></div>`).join('');
+  document.getElementById('kfeed').innerHTML=killFeed.slice(0,5).map(k=>`<div class="kfe"><span class="kfk">${k.killer}</span> [${WLABEL[k.weapon]||k.weapon}] <span class="kfv">${k.victim}</span></div>`).join('');
 });
 
 socket.on('scoreUpdate', data => {
@@ -590,6 +609,7 @@ socket.on('playerRespawned',({id,x,y,z})=>{
     document.getElementById('hp-num').textContent='100';
     document.getElementById('hp-fill').style.width='100%';
     document.getElementById('deathscreen').style.display='none';
+    if(!scoped) document.getElementById('weapon-view-container').style.display = 'block';
   }
   if(pMeshes[id])pMeshes[id].visible=true;
 });
@@ -609,10 +629,8 @@ function animate(){
   requestAnimationFrame(animate);
   const dt=Math.min(clock.getDelta(),0.05);
 
-  // Move Lasers
   for(let i=lasers.length-1;i>=0;i--){
     const l=lasers[i];l.life-=dt;
-    // Speed set to 60 for fast bullets
     l.m.position.x+=l.dx*60*dt; l.m.position.y+=l.dy*60*dt; l.m.position.z+=l.dz*60*dt;
     if(l.life<=0){scene.remove(l.m);lasers.splice(i,1);}
   }
@@ -629,14 +647,12 @@ function animate(){
     const spd=(keys['ShiftLeft'])?RN:WK;
     vel.x=md.x*spd; vel.z=md.z*spd;
     
-    // Slide / Collision Logic
     slide(cam.position, vel.x*dt, vel.y*dt, vel.z*dt);
     if(cam.position.y<1.7){cam.position.y=1.7; vel.y=0; onGround=true;}
     
     cam.rotation.set(pitch,yaw,0,'YXZ');
     socket.emit('move',{x:cam.position.x, y:cam.position.y-1.7, z:cam.position.z, rotY:yaw});
 
-    // ─── SHOOTING & RAYCASTING LOGIC ───
     if(shooting && pointerLocked){
       const now=Date.now();
       if(now-lastShot >= WRATE[curWeapon]){
@@ -644,30 +660,19 @@ function animate(){
         const euler = new THREE.Euler(pitch, yaw, 0, 'YXZ');
         const aimDir = new THREE.Vector3(0,0,-1).applyEuler(euler).normalize();
         
-        // 1. Raycast to find the exact 3D pixel the crosshair is aiming at
         const raycaster = new THREE.Raycaster(cam.position, aimDir);
-        // Ignore floating bullets when finding walls
         const hitObjects = scene.children.filter(c => !c.userData?.isLaser);
         const intersects = raycaster.intersectObjects(hitObjects, true);
         
-        let hitDist = 50; // Default convergence distance if looking at the sky
-        if(intersects.length > 0) {
-            hitDist = intersects[0].distance;
-        }
+        let hitDist = 50; 
+        if(intersects.length > 0) { hitDist = intersects[0].distance; }
         
-        // The precise coordinate in the map where the crosshair lands
         const targetPoint = cam.position.clone().add(aimDir.clone().multiplyScalar(hitDist));
-
-        // 2. Offset the visual spawn point down & right (like holding a gun)
         const offset = new THREE.Vector3(0.25, -0.2, -0.6).applyEuler(euler);
         const spawnPos = cam.position.clone().add(offset);
-        
-        // 3. Calculate trajectory from Gun Barrel directly to Target Point
         const visualDir = new THREE.Vector3().subVectors(targetPoint, spawnPos).normalize();
         
         spawnLaser(spawnPos.x, spawnPos.y, spawnPos.z, visualDir.x, visualDir.y, visualDir.z, SKINS[selectedSkin].laser);
-        
-        // Send pure crosshair direction to server for perfect hit detection
         socket.emit('shoot',{dirX:aimDir.x, dirY:aimDir.y, dirZ:aimDir.z});
         
         if(curWeapon !== 'rifle') shooting=false;
