@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>PlayOJO Strike - FFA</title>
 <style>
     /* ── RESET & BASE ── */
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{background:#111;color:#fff;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden}
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none;}
+    body{background:#111;color:#fff;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;touch-action:none;}
 
     /* ── LOBBY ── */
     #lobby{position:fixed;inset:0;display:flex;flex-direction:row;align-items:stretch;
@@ -57,25 +58,19 @@
     #dmg-flash{position:fixed;inset:0;pointer-events:none;z-index:18;opacity:0;
       background:rgba(200,0,0,0.45);transition:opacity .15s}
 
-    /* ── COUNTER STRIKE RIGHT HAND WEAPON OVERLAY ── */
+    /* ── WEAPON OVERLAY (Adjusted bounds for small viewports) ── */
     #weapon-view-container {
         position: absolute;
         bottom: 0;
         right: 2%;
-        width: 380px; 
+        width: 260px; 
         z-index: 9;
         pointer-events: none;
         display: block;
     }
-    #weapon-img {
-        width: 100%;
-        height: auto;
-        display: block;
-    }
-    /* Simple draw/equip bounce animation */
-    .weapon-draw-anim {
-        animation: weaponDrawEffect 0.18s ease-out forwards;
-    }
+    @media (min-width: 768px) { #weapon-view-container { width: 380px; } }
+    #weapon-img { width: 100%; height: auto; display: block; }
+    .weapon-draw-anim { animation: weaponDrawEffect 0.18s ease-out forwards; }
     @keyframes weaponDrawEffect {
         0% { transform: translateY(120px) rotate(5deg); }
         100% { transform: translateY(0) rotate(0deg); }
@@ -83,67 +78,115 @@
 
     /* FFA Top Bar */
     #topbar{position:absolute;top:0;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
-    #timer{background:#111;color:#fff;padding:8px 30px;font-size:1.6rem;font-weight:900;
-      letter-spacing:4px;text-align:center;border:1px solid #333;border-top:none;border-radius:0 0 8px 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5)}
+    #timer{background:#111;color:#fff;padding:8px 30px;font-size:1.4rem;font-weight:900;
+      letter-spacing:4px;text-align:center;border:1px solid #333;border-top:none;border-radius:0 0 8px 8px;}
     #roundlabel{background:#0009;padding:3px 18px;font-size:.62rem;letter-spacing:3px;color:#999;text-align:center; border-radius: 0 0 4px 4px}
 
-    #bl{position:absolute;bottom:0;left:0;padding:12px 16px;background:linear-gradient(to top,#000c,transparent)}
-    #hp-num{font-size:2rem;font-weight:900;color:#fff;line-height:1}
-    #hp-bar{width:110px;height:3px;background:#333;margin:4px 0 6px}
-    #hp-fill{height:100%;background:#33cc55;transition:.2s}
+    #bl{position:absolute;bottom:15px;left:15px;padding:6px;background:rgba(0,0,0,0.4);border-radius:6px;}
+    #hp-num{font-size:1.6rem;font-weight:900;color:#fff;line-height:1}
+    #hp-bar{width:90px;height:4px;background:#333;margin:4px 0 2px}
+    #hp-fill{height:100%;background:#33cc55;}
 
-    #br{position:absolute;bottom:0;right:0;padding:12px 18px;
-      background:linear-gradient(to top,#000c,transparent);text-align:right}
-    #slot-label{font-size:.62rem;color:#888;letter-spacing:3px;text-transform:uppercase;margin-bottom:3px}
-    #ammo-row{display:flex;align-items:baseline;justify-content:flex-end;gap:7px}
-    #ammo-cur{font-size:2.6rem;font-weight:900;color:#fff;line-height:1}
-    #ammo-sep{font-size:1.2rem;color:#444}
-    #ammo-res{font-size:1.2rem;font-weight:700;color:#888}
-    #wep-name{font-size:.62rem;color:#777;letter-spacing:3px;text-transform:uppercase;margin-top:2px}
+    #br{position:absolute;bottom:15px;right:15px;text-align:right;padding:6px;background:rgba(0,0,0,0.4);border-radius:6px;}
+    #slot-label{font-size:.55rem;color:#888;letter-spacing:2px;text-transform:uppercase}
+    #ammo-row{display:flex;align-items:baseline;justify-content:flex-end;gap:4px}
+    #ammo-cur{font-size:2rem;font-weight:900;color:#fff;line-height:1}
+    #ammo-sep{font-size:1rem;color:#444}
+    #ammo-res{font-size:1rem;font-weight:700;color:#888}
+    #wep-name{font-size:.55rem;color:#777;letter-spacing:2px;text-transform:uppercase}
 
     #wepbar{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
       display:flex;gap:5px;pointer-events:all}
-    .wbtn{padding:4px 12px;border:1px solid #333;background:#111b;color:#666;
-      font-size:.68rem;cursor:pointer;letter-spacing:1px;border-radius:2px}
+    .wbtn{padding:8px 14px;border:1px solid #333;background:#111b;color:#888;
+      font-size:.75rem;font-weight:700;cursor:pointer;letter-spacing:1px;border-radius:4px}
     .wbtn.on{border-color:#c8a000;color:#ffcc44;background:#c8a00018}
 
-    #kfeed{position:absolute;top:10px;right:12px;display:flex;flex-direction:column;
-      gap:3px;align-items:flex-end}
-    .kfe{background:#0009;padding:3px 9px;font-size:.72rem;display:flex;gap:6px;
-      align-items:center;border-left:2px solid #c8a000;animation:kfout 5s forwards}
-    @keyframes kfout{0%,60%{opacity:1}100%{opacity:0}}
-    .kfk{color:#ffcc44;font-weight:700}.kfv{color:#ccc}.kfwep{color:#666;font-size:.65rem}
+    #kfeed{position:absolute;top:10px;right:12px;display:flex;flex-direction:column;gap:3px;align-items:flex-end}
+    .kfe{background:#0009;padding:3px 9px;font-size:.72rem;display:flex;gap:6px;border-left:2px solid #c8a000;}
+    .kfk{color:#ffcc44;font-weight:700}.kfv{color:#ccc}
 
-    /* ── OVERLAYS ── */
-    #lockprompt{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;
-      align-items:center;justify-content:center;flex-direction:column;gap:.4rem;z-index:20;
-      pointer-events: none;}
-    #lockprompt p{color:#ff9900;font-size:1.5rem;font-weight:700;letter-spacing:3px}
+    /* ── MOBILE TOUCH CONSOLE OVERLAYS (COD STYLE) ── */
+    .touch-interactive { pointer-events: auto; }
+    
+    /* Left Virtual Joystick Container Zone */
+    #mobile-joystick-zone {
+        position: absolute;
+        bottom: 10%;
+        left: 5%;
+        width: 140px;
+        height: 140px;
+        background: rgba(255,255,255,0.04);
+        border: 2px dashed rgba(255,255,255,0.15);
+        border-radius: 50%;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 25;
+    }
+    #mobile-joystick-handle {
+        width: 55px;
+        height: 55px;
+        background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%);
+        border: 2px solid rgba(255,255,255,0.6);
+        border-radius: 50%;
+        box-shadow: 0 0 15px rgba(0,0,0,0.6);
+        transform: translate(0px, 0px);
+    }
 
-    #deathscreen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-      flex-direction:column;background:rgba(0,0,0,0.8);z-index:50}
+    /* Right Action Button Cluster Layer */
+    #mobile-actions-zone {
+        position: absolute;
+        bottom: 8%;
+        right: 15%;
+        width: 220px;
+        height: 220px;
+        display: none;
+        z-index: 25;
+    }
+    .touch-btn {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.8rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .touch-btn:active {
+        background: rgba(255, 102, 0, 0.4);
+        border-color: #ff6600;
+    }
+    
+    /* COD Mobile inspired button placements */
+    #btn-shoot { width: 85px; height: 85px; right: 0; bottom: 20px; background: rgba(200, 40, 40, 0.4); border-color: rgba(255,80,80,0.4); font-size: 1rem; }
+    #btn-scope { width: 60px; height: 60px; right: 95px; bottom: 75px; }
+    #btn-jump { width: 55px; height: 55px; right: 20px; bottom: 115px; }
+    #btn-reload { width: 55px; height: 55px; right: 85px; bottom: 10px; font-size: 0.7rem; }
+
+    /* Overlays */
+    #lockprompt{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;flex-direction:column;gap:.4rem;z-index:20;pointer-events:none;}
+    #lockprompt p{color:#ff9900;font-size:1.3rem;font-weight:700;letter-spacing:2px;text-align:center;padding:10px;}
+
+    #deathscreen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,0.8);z-index:50}
     #deathscreen h2{font-size:3rem;color:#ff2222;font-weight:900;letter-spacing:4px}
-    #respawn-timer{font-size:1.4rem;color:#ff6600;margin-top:1rem;font-weight:700;letter-spacing:2px}
+    #respawn-timer{font-size:1.4rem;color:#ff6600;margin-top:1rem;font-weight:700}
 
-    #scoreboard{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;
-      align-items:center;justify-content:center;z-index:30}
+    #scoreboard{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:30}
     #scoreboard.show{display:flex}
-    #sb-wrap{width:660px;background:#111;border:1px solid #2a2a2a}
-    #sb-head{display:flex;justify-content:space-between;align-items:center;
-      background:#181818;padding:9px 16px;border-bottom:1px solid #222}
-    #sb-head span:first-child{font-size:.82rem;font-weight:700;letter-spacing:4px;color:#fff}
+    #sb-wrap{width:90%;max-width:660px;background:#111;border:1px solid #2a2a2a}
+    #sb-head{display:flex;justify-content:space-between;align-items:center;background:#181818;padding:9px 16px;border-bottom:1px solid #222}
+    #sb-head span{font-size:.75rem;font-weight:700}
     #sb-table{width:100%;border-collapse:collapse}
-    #sb-table th{background:#0d0d0d;color:#666;padding:6px 14px;font-size:.65rem;
-      letter-spacing:3px;text-transform:uppercase;border-bottom:1px solid #1e1e1e}
-    #sb-table td{padding:6px 14px;border-bottom:1px solid #191919;font-size:.78rem;color:#bbb;text-align:center}
-    #sb-table td:first-child{text-align:left}
+    #sb-table th{background:#0d0d0d;color:#666;padding:6px;font-size:.6rem;text-transform:uppercase}
+    #sb-table td{padding:6px;font-size:.7rem;color:#bbb;text-align:center}
 
-    /* Sniper scope */
     #scope-overlay{position:fixed;inset:0;display:none;z-index:15;pointer-events:none}
     #scope-overlay.on{display:block}
-    #scope-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-      width:280px;height:280px;border-radius:50%;border:3px solid #111;
-      box-shadow:0 0 0 9999px rgba(0,0,0,.88)}
+    #scope-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:240px;height:240px;border-radius:50%;border:3px solid #111;box-shadow:0 0 0 9999px rgba(0,0,0,.88)}
     #scope-h{position:absolute;top:50%;left:0;right:0;height:1px;background:#33ff66;opacity:.7;transform:translateY(-50%)}
     #scope-v{position:absolute;left:50%;top:0;bottom:0;width:1px;background:#33ff66;opacity:.7;transform:translateX(-50%)}
     #scope-dot{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:#33ff66;transform:translate(-50%,-50%)}
@@ -174,19 +217,22 @@
     <div id="ctrl-title">⌨ CONTROLS</div>
     <div class="ctrl-grid">
       <div class="ctrl-row"><span class="ctrl-key">W A S D</span><span class="ctrl-desc">Move</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">Mouse</span><span class="ctrl-desc">Aim / Look</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">L‑Click</span><span class="ctrl-desc">Shoot</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">R‑Click</span><span class="ctrl-desc">Scope (Sniper)</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">R</span><span class="ctrl-desc">Reload</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">Space</span><span class="ctrl-desc">Jump</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">Shift</span><span class="ctrl-desc">Sprint</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">Tab</span><span class="ctrl-desc">Scoreboard</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">1</span><span class="ctrl-desc">Machine Gun</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">2</span><span class="ctrl-desc">Pistol</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">3</span><span class="ctrl-desc">Sniper Scope</span></div>
-      <div class="ctrl-row"><span class="ctrl-key">ESC</span><span class="ctrl-desc">Release Mouse</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">Touch Drag</span><span class="ctrl-desc">Aim View</span></div>
+      <div class="ctrl-row"><span class="ctrl-key">On-Screen</span><span class="ctrl-desc">Shoot/Scope Console</span></div>
     </div>
   </div>
+</div>
+
+<!-- Virtual Touch Controllers for Mobile -->
+<div id="mobile-joystick-zone" class="touch-interactive">
+    <div id="mobile-joystick-handle"></div>
+</div>
+
+<div id="mobile-actions-zone" class="touch-interactive">
+    <div id="btn-shoot" class="touch-btn">FIRE</div>
+    <div id="btn-scope" class="touch-btn">SCOPE</div>
+    <div id="btn-jump" class="touch-btn">JUMP</div>
+    <div id="btn-reload" class="touch-btn">RELOAD</div>
 </div>
 
 <div id="hud">
@@ -205,7 +251,6 @@
     <div id="hp-bar"><div id="hp-fill"></div></div>
   </div>
 
-  <!-- First Person Weapon Graphics Placement Layer -->
   <div id="weapon-view-container">
       <img id="weapon-img" src="assets/machine_gun.png" alt="gun">
   </div>
@@ -220,13 +265,13 @@
     <div id="wep-name">MACHINE GUN</div>
   </div>
   <div id="wepbar">
-    <div class="wbtn on" data-w="rifle">1 MACHINE GUN</div>
+    <div class="wbtn on" data-w="rifle">1 MGUN</div>
     <div class="wbtn" data-w="pistol">2 PISTOL</div>
     <div class="wbtn" data-w="sniper">3 SNIPER</div>
   </div>
 </div>
 
-<div id="lockprompt"><p>🖱 CLICK TO CAPTURE MOUSE</p></div>
+<div id="lockprompt"><p>🖱 CLICK TO CAPTURE MOUSE<br><span style="font-size:0.75rem;color:#888;">(Mobile: Swipe screen directly to look)</span></p></div>
 <div id="deathscreen">
   <h2>ELIMINATED</h2>
   <div id="respawn-timer">Respawning...</div>
@@ -234,9 +279,9 @@
 
 <div id="scoreboard">
   <div id="sb-wrap">
-    <div id="sb-head"><span>SCOREBOARD (FFA)</span><span>HOLD TAB TO VIEW</span></div>
+    <div id="sb-head"><span>SCOREBOARD (FFA)</span></div>
     <table id="sb-table">
-      <thead><tr><th>PLAYER</th><th>KILLS</th><th>DEATHS</th><th>K/D</th></tr></thead>
+      <thead><tr><th>PLAYER</th><th>KILLS</th><th>DEATHS</th></tr></thead>
       <tbody id="sb-body"></tbody>
     </table>
   </div>
@@ -275,7 +320,6 @@ let curWeapon='rifle',scoped=false,remotePlayers={},onGround=true;
 const vel={x:0,y:0,z:0};
 let pitch=0,yaw=0;
 
-// WEAPON METADATA DICTIONARIES SYNCHRONIZED TO SERVER SPECIFICATION
 const WRATE={rifle:150,pistol:400,sniper:1200}, NORMAL_FOV=75,SCOPE_FOV=15;
 const WLABEL={rifle:'MACHINE GUN',pistol:'PISTOL',sniper:'SNIPER'};
 const WSLOT={rifle:'PRIMARY',pistol:'SECONDARY',sniper:'SPECIAL'};
@@ -287,10 +331,13 @@ const WEAPON_ASSETS={
 
 const G=-20,JV=8,WK=7,RN=11,PR=0.35,PH=1.8;
 
+// Mobile Detection Check Flag
+const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
 const canvas=document.getElementById('c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
 renderer.shadowMap.enabled=true;
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Cap pixel ratio to save mobile GPU life
 renderer.setSize(window.innerWidth,window.innerHeight);
 
 const scene=new THREE.Scene();
@@ -300,7 +347,6 @@ scene.fog=new THREE.Fog(0xddd8cc,18,55);
 const cam=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,150);
 cam.position.set(0,1.7,0);
 
-// Lighting
 scene.add(new THREE.AmbientLight(0xfff8ee,0.9));
 const sunLight=new THREE.DirectionalLight(0xfff0cc,0.7);
 sunLight.position.set(15,10,35);
@@ -319,7 +365,6 @@ const coreM = sm(0xdadada);
 const wallM = sm(0xf2efe8);
 const deskLegM = sm(0x222222);
 const monM = sm(0x111111);
-const chairM = sm(0x555555);
 const roomM = sm(0xe0e0e0);
 
 box(90,0.15,60, 0,0,0, sm(0x8a8878)); 
@@ -343,10 +388,6 @@ createBanner('logo_ojo.png', 30, 10, 0, 6, -29.4, 0);
 createBanner('logo_ojo.png', 30, 10, 0, 6, 29.4, Math.PI);       
 createBanner('logo_owl.jpg', 12, 12, 44.4, 6, 0, -Math.PI/2);    
 createBanner('logo_owl.jpg', 12, 12, -44.4, 6, 0, Math.PI/2);    
-createBanner('logo_ojo.png', 12, 6, -8, 6, -14.1, Math.PI); 
-createBanner('logo_ojo.png', 12, 6, -8, 6, 10.1, 0);        
-createBanner('logo_owl.jpg', 8, 8, 2.1, 6, -2, Math.PI/2);  
-createBanner('logo_owl.jpg', 8, 8, -18.1, 6, -2, -Math.PI/2); 
 
 function buildDesk(cx, cz, w, d, hexCol) {
     box(w, 0.1, d, cx, 0.75, cz, sm(hexCol)); 
@@ -361,16 +402,13 @@ function buildDesk(cx, cz, w, d, hexCol) {
     addCol(cx, 1, cz, w, 2, d);
 }
 
-buildDesk(-41, -15, 6, 5, 0xffee00); 
-buildDesk(-30, -15, 16, 5, 0x00cc44); 
-buildDesk(-38, 0, 6, 5, 0xffee00); 
-buildDesk(-28, 0, 6, 5, 0xee2222); 
+buildDesk(-41, -15, 6, 5, 0xffee00); buildDesk(-30, -15, 16, 5, 0x00cc44); 
+buildDesk(-38, 0, 6, 5, 0xffee00); buildDesk(-28, 0, 6, 5, 0xee2222); 
 
 const cylM = sm(0xffffff);
 const roundTable = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 0.1, 16), cylM);
 roundTable.position.set(-38, 0.75, 22); scene.add(roundTable);
-box(0.5, 0.75, 0.5, -38, 0.375, 22, deskLegM); 
-addCol(-38, 1, 22, 5, 2, 5); 
+box(0.5, 0.75, 0.5, -38, 0.375, 22, deskLegM); addCol(-38, 1, 22, 5, 2, 5); 
 
 box(12, 8, 1, -38, 4, 28, roomM); addCol(-38, 4, 28, 12, 8, 1); 
 box(1, 8, 12, -32.5, 4, 22, roomM); addCol(-32.5, 4, 22, 1, 8, 12); 
@@ -378,14 +416,11 @@ box(3.5, 8, 1, -42.25, 4, 16, roomM); addCol(-42.25, 4, 16, 3.5, 8, 1);
 box(3.5, 8, 1, -33.75, 4, 16, roomM); addCol(-33.75, 4, 16, 3.5, 8, 1); 
 box(0.2, 8, 4, -39.6, 4, 18, sm(0x8b5a2b)); addCol(-39.6, 4, 18, 0.2, 8, 4); 
 
-buildDesk(-25, 22, 5, 5, 0x22eeee); 
-buildDesk(-15, 22, 5, 5, 0x1144ff); 
-buildDesk(-5,  22, 5, 5, 0xff00ff); 
-buildDesk( 5,  22, 5, 5, 0x111166); 
+buildDesk(-25, 22, 5, 5, 0x22eeee); buildDesk(-15, 22, 5, 5, 0x1144ff); 
+buildDesk(-5,  22, 5, 5, 0xff00ff); buildDesk( 5,  22, 5, 5, 0x111166); 
 buildDesk( 16, 22, 6, 5, 0x00ccff); 
 
-buildDesk(12, -15, 5, 7, 0x8a2be2); 
-buildDesk(12, 0,   5, 7, 0x8a2be2); 
+buildDesk(12, -15, 5, 7, 0x8a2be2); buildDesk(12, 0,   5, 7, 0x8a2be2); 
 buildDesk(30, -25, 4, 4, 0xaa22ff); 
 
 box(12, 8, 1, 30, 4, -19, roomM); addCol(30, 4, -19, 12, 8, 1); 
@@ -418,7 +453,7 @@ function makePMesh(name,skinIdx){
   scene.add(g); return g;
 }
 
-// ─── LOGIC & INPUT ───
+// ─── COLLISION RUNNERS ───
 function slide(pos,dx,dy,dz){
   if(!COL.some(c=>overlaps(pos.x+dx,pos.y,pos.z,c))) pos.x+=dx; else vel.x=0;
   if(!COL.some(c=>overlaps(pos.x,pos.y,pos.z+dz,c))) pos.z+=dz; else vel.z=0;
@@ -431,6 +466,7 @@ function overlaps(x,y,z,c){
   return x+PR>c.minX&&x-PR<c.maxX&&fy<c.maxY&&fy+PH>c.minY&&z+PR>c.minZ&&z-PR<c.maxZ;
 }
 
+// Keyboard input falling fallback trackers
 const keys={};
 window.addEventListener('keydown',e=>{
     keys[e.code]=true;
@@ -447,58 +483,155 @@ window.addEventListener('keyup',e=>{
     if(e.code==='Tab') showSB(false);
 });
 
-// MOUSE CLICKING (Shooting & Scoping)
+// DESKTOP MOUSE INTERACTION TRACKERS
 document.addEventListener('mousedown',e=>{
-    if(!inGame || !alive || !pointerLocked) return;
+    if(!inGame || !alive || !pointerLocked || isMobile) return;
     if(e.button===0) shooting=true;
-    if(e.button===2 && curWeapon==='sniper'){
-        scoped=true; cam.fov=SCOPE_FOV; cam.updateProjectionMatrix();
-        document.getElementById('scope-overlay').classList.add('on');
-        document.getElementById('xhair').style.display='none';
-        // Counter-Strike Behavior: Hide weapon overlay viewport inside scoping mode
-        document.getElementById('weapon-view-container').style.display = 'none';
-    }
+    if(e.button===2 && curWeapon==='sniper') triggerMobileScope(true);
 });
 document.addEventListener('mouseup',e=>{
+    if(isMobile) return;
     if(e.button===0) shooting=false;
-    if(e.button===2){
-        scoped=false; cam.fov=NORMAL_FOV; cam.updateProjectionMatrix();
-        document.getElementById('scope-overlay').classList.remove('on');
-        document.getElementById('xhair').style.display='block';
-        // Restore weapon overlay viewport frame when coming out of scope
-        if(alive) document.getElementById('weapon-view-container').style.display = 'block';
-    }
+    if(e.button===2) triggerMobileScope(false);
 });
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 
-// MOUSE MOVEMENT
 document.addEventListener('mousemove',e=>{
-    if(!pointerLocked || !inGame || !alive) return;
+    if(!pointerLocked || !inGame || !alive || isMobile) return;
     yaw-=e.movementX*0.002; pitch-=e.movementY*0.002;
     pitch=Math.max(-1.5,Math.min(1.5,pitch));
 });
 
-// POINTER LOCK
-canvas.addEventListener('click', () => { if(inGame) canvas.requestPointerLock(); });
+// DESKTOP POINTER LOCK GATEWAY
+canvas.addEventListener('click', () => { if(inGame && !isMobile) canvas.requestPointerLock(); });
 document.addEventListener('pointerlockchange', () => {
     pointerLocked = (document.pointerLockElement === canvas);
-    if (inGame && alive) document.getElementById('lockprompt').style.display = pointerLocked ? 'none' : 'flex';
+    if (inGame && alive && !isMobile) document.getElementById('lockprompt').style.display = pointerLocked ? 'none' : 'flex';
 });
 
-// WEAPON SWITCH
+// ─── 📱 MOBILE TOUCH CONSOLE CORE MOTOR ENGINE ───
+let touchJoystickId = null;
+let joystickStartPos = { x: 0, y: 0 };
+let mobileMoveVector = { x: 0, z: 0 };
+
+const joyZone = document.getElementById('mobile-joystick-zone');
+const joyHandle = document.getElementById('mobile-joystick-handle');
+
+// Left Swipe Zone Tracker vs Right View Look Swiper Trackers
+window.addEventListener('touchstart', e => {
+    if(!inGame || !alive) return;
+    for(let i=0; i<e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        // If left half of the screen -> intercept movement joystick logic
+        if(t.clientX < window.innerWidth / 2 && touchJoystickId === null) {
+            touchJoystickId = t.identifier;
+            joystickStartPos = { x: t.clientX, y: t.clientY };
+            joyZone.style.left = (t.clientX - 70) + 'px';
+            joyZone.style.bottom = (window.innerHeight - t.clientY - 70) + 'px';
+            joyZone.style.display = 'flex';
+        }
+    }
+}, {passive: false});
+
+window.addEventListener('touchmove', e => {
+    if(!inGame || !alive) return;
+    for(let i=0; i<e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        if(t.identifier === touchJoystickId) {
+            let dx = t.clientX - joystickStartPos.x;
+            let dy = t.clientY - joystickStartPos.y;
+            let dist = Math.hypot(dx, dy);
+            const maxRadius = 50;
+            
+            if(dist > maxRadius) {
+                dx = (dx / dist) * maxRadius;
+                dy = (dy / dist) * maxRadius;
+                dist = maxRadius;
+            }
+            
+            joyHandle.style.transform = `translate(${dx}px, ${dy}px)`;
+            
+            // Generate normal walking directions maps vectors normalized
+            mobileMoveVector.x = dx / maxRadius;
+            mobileMoveVector.z = dy / maxRadius;
+        } else {
+            // Right half drag -> Look around handler emulation frame
+            if(t.clientX >= window.innerWidth / 2) {
+                // Tracking standard delta frames manually across updates natively
+                if(t.clientX && this.lastTouchX) {
+                    let mX = t.clientX - this.lastTouchX;
+                    let mY = t.clientY - this.lastTouchY;
+                    yaw -= mX * 0.005;
+                    pitch -= mY * 0.005;
+                    pitch = Math.max(-1.4, Math.min(1.4, pitch));
+                }
+                this.lastTouchX = t.clientX;
+                this.lastTouchY = t.clientY;
+            }
+        }
+    }
+}, {passive: false});
+
+window.addEventListener('touchend', e => {
+    for(let i=0; i<e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        if(t.identifier === touchJoystickId) {
+            touchJoystickId = null;
+            mobileMoveVector = { x: 0, z: 0 };
+            joyHandle.style.transform = 'translate(0px, 0px)';
+            joyZone.style.display = 'none';
+        }
+        if(t.clientX >= window.innerWidth / 2) {
+            this.lastTouchX = null;
+            this.lastTouchY = null;
+        }
+    }
+});
+
+// Hook up Touch console button events cleanly
+document.getElementById('btn-shoot').addEventListener('touchstart', (e) => { e.preventDefault(); shooting = true; });
+document.getElementById('btn-shoot').addEventListener('touchend', () => { shooting = false; });
+
+document.getElementById('btn-scope').addEventListener('touchstart', (e) => { 
+    e.preventDefault(); 
+    if(curWeapon === 'sniper') triggerMobileScope(!scoped);
+});
+
+document.getElementById('btn-jump').addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if(onGround && alive) { vel.y = JV; onGround = false; }
+});
+
+document.getElementById('btn-reload').addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    socket.emit('reload');
+});
+
+// Unified execution scoping method frame handlers
+function triggerMobileScope(boolState) {
+    scoped = boolState;
+    if(scoped) {
+        cam.fov = SCOPE_FOV; cam.updateProjectionMatrix();
+        document.getElementById('scope-overlay').classList.add('on');
+        document.getElementById('xhair').style.display = 'none';
+        document.getElementById('weapon-view-container').style.display = 'none';
+    } else {
+        cam.fov = NORMAL_FOV; cam.updateProjectionMatrix();
+        document.getElementById('scope-overlay').classList.remove('on');
+        document.getElementById('xhair').style.display = 'block';
+        if(alive) document.getElementById('weapon-view-container').style.display = 'block';
+    }
+}
+
+// ─── CLIENT WEAPON ACTION SWAPPER ───
 function sw(w){
-  if(scoped && w!=='sniper'){
-    scoped=false; cam.fov=NORMAL_FOV; cam.updateProjectionMatrix();
-    document.getElementById('scope-overlay').classList.remove('on');
-    document.getElementById('xhair').style.display='block';
-  }
+  if(scoped && w!=='sniper') triggerMobileScope(false);
   
   curWeapon=w; socket.emit('switchWeapon',{weapon:w});
   document.querySelectorAll('.wbtn').forEach(b=>b.classList.toggle('on',b.dataset.w===w));
   document.getElementById('wep-name').textContent=WLABEL[w];
   document.getElementById('slot-label').textContent=WSLOT[w];
   
-  // Update Right Hand Asset URL Route & trigger animation bounce
   const wepImgEl = document.getElementById('weapon-img');
   const wepContEl = document.getElementById('weapon-view-container');
   
@@ -506,10 +639,18 @@ function sw(w){
   if(!scoped) {
       wepContEl.style.display = 'block';
       wepContEl.classList.remove('weapon-draw-anim');
-      void wepContEl.offsetWidth; // Force Reflow
+      void wepContEl.offsetWidth; 
       wepContEl.classList.add('weapon-draw-anim');
   }
 }
+
+// Attach weapon quick switcher selectors touch events
+document.querySelectorAll('.wbtn').forEach(btn => {
+    btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        sw(btn.dataset.w);
+    });
+});
 
 // SCOREBOARD (FFA)
 function showSB(on){
@@ -518,7 +659,7 @@ function showSB(on){
     sb.classList.add('show');
     const all=Object.values(remotePlayers).sort((a,b)=>b.kills-a.kills);
     document.getElementById('sb-body').innerHTML=all.map(p=>
-      `<tr><td>${p.name}</td><td>${p.kills}</td><td>${p.deaths}</td><td>${(p.kills/(p.deaths||1)).toFixed(1)}</td></tr>`
+      `<tr><td>${p.name}</td><td>${p.kills}</td><td>${p.deaths}</td></tr>`
     ).join('');
   } else sb.classList.remove('show');
 }
@@ -545,13 +686,17 @@ document.getElementById('joinBtn').addEventListener('click',()=>{
 });
 
 socket.on('joined', data => {
-    myId = data.id; 
-    inGame = true; 
-    alive = true;
+    myId = data.id; inGame = true; alive = true;
     cam.position.set(data.player.x, 1.7, data.player.z);
     document.getElementById('lobby').style.display = 'none';
     document.getElementById('hud').style.display = 'block';
-    document.getElementById('lockprompt').style.display = 'none';
+    
+    if(isMobile) {
+        document.getElementById('mobile-actions-zone').style.display = 'block';
+        document.getElementById('lockprompt').style.display = 'none';
+    } else {
+        document.getElementById('lockprompt').style.display = 'flex';
+    }
     document.getElementById('weapon-view-container').style.display = 'block';
 });
 
@@ -623,7 +768,7 @@ socket.on('timerUpdate',sec=>{
   document.getElementById('timer').textContent=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
 });
 
-// ─── GAME LOOP ───
+// ─── MAIN ENGINE LOOP ───
 const clock=new THREE.Clock();
 function animate(){
   requestAnimationFrame(animate);
@@ -637,11 +782,23 @@ function animate(){
 
   if(inGame && alive){
     vel.y+=G*dt;
+    
     const fv=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
     const rv=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
     const md=new THREE.Vector3();
+    
+    // Evaluate standard desktop keyboard paths
     if(keys['KeyW'])md.add(fv); if(keys['KeyS'])md.sub(fv);
     if(keys['KeyA'])md.sub(rv); if(keys['KeyD'])md.add(rv);
+    
+    // Evaluate virtual overlay mobile movement parameters if active
+    if(isMobile && (mobileMoveVector.x !== 0 || mobileMoveVector.z !== 0)) {
+        // Forward component maps inversely down along view axis
+        md.add(fv.clone().multiplyScalar(-mobileMoveVector.z));
+        // Strafe component maps laterally
+        md.add(rv.clone().multiplyScalar(mobileMoveVector.x));
+    }
+    
     if(md.lengthSq()>0)md.normalize();
 
     const spd=(keys['ShiftLeft'])?RN:WK;
@@ -653,7 +810,8 @@ function animate(){
     cam.rotation.set(pitch,yaw,0,'YXZ');
     socket.emit('move',{x:cam.position.x, y:cam.position.y-1.7, z:cam.position.z, rotY:yaw});
 
-    if(shooting && pointerLocked){
+    // Shooting Controller checks
+    if(shooting && (pointerLocked || isMobile)){
       const now=Date.now();
       if(now-lastShot >= WRATE[curWeapon]){
         lastShot=now;
