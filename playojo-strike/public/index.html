@@ -331,8 +331,8 @@ const WEAPON_ASSETS={
 
 const G=-20,JV=8,WK=7,RN=11,PR=0.35,PH=1.8;
 
-// Mobile Detection Check Flag
-const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+// ─── UPDATED BULLETPROOF MOBILE DETECTION ───
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 const canvas=document.getElementById('c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
@@ -528,7 +528,6 @@ window.addEventListener('touchstart', e => {
             joystickStartPos = { x: t.clientX, y: t.clientY };
             joyZone.style.left = (t.clientX - 70) + 'px';
             joyZone.style.bottom = (window.innerHeight - t.clientY - 70) + 'px';
-            joyZone.style.display = 'flex';
         }
     }
 }, {passive: false});
@@ -572,14 +571,20 @@ window.addEventListener('touchmove', e => {
     }
 }, {passive: false});
 
+// ─── UPDATED: SNAP JOYSTICK BACK BUT KEEP ON SCREEN ───
 window.addEventListener('touchend', e => {
     for(let i=0; i<e.changedTouches.length; i++) {
         const t = e.changedTouches[i];
         if(t.identifier === touchJoystickId) {
             touchJoystickId = null;
             mobileMoveVector = { x: 0, z: 0 };
+            
+            // Snap handle back to center, but DO NOT hide the joystick zone
             joyHandle.style.transform = 'translate(0px, 0px)';
-            joyZone.style.display = 'none';
+            
+            // Reset the zone back to its default bottom-left position 
+            joyZone.style.left = '5%';
+            joyZone.style.bottom = '10%';
         }
         if(t.clientX >= window.innerWidth / 2) {
             this.lastTouchX = null;
@@ -685,6 +690,7 @@ document.getElementById('joinBtn').addEventListener('click',()=>{
   socket.emit('join',{name:document.getElementById('nameInput').value, skin:selectedSkin, withBots:document.getElementById('botsCheck').checked});
 });
 
+// ─── UPDATED: FORCING JOYSTICK TO SHOW ON JOIN ───
 socket.on('joined', data => {
     myId = data.id; inGame = true; alive = true;
     cam.position.set(data.player.x, 1.7, data.player.z);
@@ -692,7 +698,9 @@ socket.on('joined', data => {
     document.getElementById('hud').style.display = 'block';
     
     if(isMobile) {
+        // Show the mobile console elements immediately
         document.getElementById('mobile-actions-zone').style.display = 'block';
+        document.getElementById('mobile-joystick-zone').style.display = 'flex'; 
         document.getElementById('lockprompt').style.display = 'none';
     } else {
         document.getElementById('lockprompt').style.display = 'flex';
